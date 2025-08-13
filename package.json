@@ -1,0 +1,31 @@
+{
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "name": "call-of-duty---wrap-up-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --env-file=.env --watch -r ts-node/register src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raya86/Call-Of-Duty---wrap-up-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Raya86/Call-Of-Duty---wrap-up-project/issues"
+  },
+  "homepage": "https://github.com/Raya86/Call-Of-Duty---wrap-up-project#readme",
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
