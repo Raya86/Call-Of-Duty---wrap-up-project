@@ -1,35 +1,46 @@
-import fastify from "fastify";
-import {
-  ReasonPhrases,
-  StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
-} from "http-status-codes";
+import { fastify, type FastifyInstance } from "fastify";
+import { closeDB, connectDB } from "./db.js";
+import { healthRouter } from "./routes/healthRouter.js";
 
-const server = fastify();
+let server: FastifyInstance;
+const PORT: number = Number(process.env.PORT) || 3000;
+const HOST: string = "0.0.0.0";
 
-server.route({
-  method: "GET",
-  url: "/health",
-  schema: {
-    response: {
-      [StatusCodes.OK]: {
-        type: "object",
-        properties: {
-          status: { type: "string" },
-        },
-      },
-    },
-  },
-  handler: (_request, reply) =>{
-    reply.send({ status: "ok" });
-  },
-});
+const start = async () => {
+  await connectDB();
+  server = fastify();
+  server.register(healthRouter, { prefix: "health" });
 
-const PORT = Number(process.env.PORT) || 3000;
-server.listen({ port: PORT }, (err, address) => {
-  if (err) {
-    console.error(err);
-    process.exitCode = 1
+  server.addHook("onClose", async () => {
+    await closeDB();
+    console.log("MongoDB connection closed");
+  });
+
+  server.listen(
+    { port: PORT, host: HOST },
+    (err: Error | null, address: string) => {
+      if (err) {
+        console.error(err);
+        shutdown(err.name);
+      }
+      console.log(`Server listening at ${address}`);
+    }
+  );
+};
+
+const shutdown = async (signal: string) => {
+  console.log(`${signal} received, shutting down...`);
+  try {
+    await server.close();
+  } finally {
+    process.exit(0);
   }
-});
+};
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("uncaughtException", () => shutdown("Uncaught Exception"));
+process.on("unhandledRejection", () => shutdown("Unhandled Rejection"));
+start();
+
+export { server };
