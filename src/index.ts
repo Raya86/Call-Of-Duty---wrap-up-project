@@ -1,15 +1,17 @@
-import { fastify, type FastifyInstance } from "fastify";
+import { type FastifyInstance } from "fastify";
+import { buildApp } from "./app.js";
 import { closeDB, connectDB } from "./db.js";
-import { healthRouter } from "./routes/healthRouter.js";
 
 let server: FastifyInstance;
 const PORT: number = Number(process.env.PORT) || 3000;
 const HOST: string = "0.0.0.0";
 
 const start = async () => {
-  await connectDB();
-  server = fastify();
-  server.register(healthRouter, { prefix: "health" });
+  server.addHook("onReady", async () => {
+    await connectDB();
+  });
+
+  server = await buildApp();
 
   server.addHook("onClose", async () => {
     await closeDB();
@@ -42,5 +44,3 @@ process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("uncaughtException", () => shutdown("Uncaught Exception"));
 process.on("unhandledRejection", () => shutdown("Unhandled Rejection"));
 start();
-
-export { server };

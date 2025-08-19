@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { getDb } from "../db";
+import { getDb } from "../db.js";
 
 const healthRouter = async (server: FastifyInstance) => {
   server.route({
