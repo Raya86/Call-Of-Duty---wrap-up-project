@@ -23,7 +23,7 @@ test("test health/db check endpoint - successful", async () => {
 });
 
 test("test health/db check endpoint - error", async () => {
-  closeDB();
+  await closeDB();
   const response = await testApp.inject({ method: "GET", url: "/health/db" });
   expect(response.statusCode).toBe(StatusCodes.SERVICE_UNAVAILABLE);
   expect(response.json()).toEqual({ status: "not connected" });

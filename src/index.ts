@@ -1,42 +1,32 @@
 import { type FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";
-import { closeDB, connectDB } from "./db.js";
 
 let server: FastifyInstance;
 const PORT: number = Number(process.env.PORT) || 3000;
 const HOST: string = "0.0.0.0";
 
 const start = async () => {
-  server.addHook("onReady", async () => {
-    await connectDB();
-  });
-
   server = await buildApp();
 
-  server.addHook("onClose", async () => {
-    await closeDB();
-    console.log("MongoDB connection closed");
-  });
-
-  server.listen(
-    { port: PORT, host: HOST },
-    (err: Error | null, address: string) => {
-      if (err) {
-        console.error(err);
-        shutdown(err.name);
-      }
-      console.log(`Server listening at ${address}`);
+  server.listen({ port: PORT, host: HOST }, (err: Error | null) => {
+    if (err) {
+      server.log.error({ err }, "Error starting Fastify server");
+      shutdown(err.name);
     }
-  );
+  });
 };
 
 const shutdown = async (signal: string) => {
-  console.log(`${signal} received, shutting down...`);
+  server.log.info({ signal }, "shutting down...");
+  let exitCode = 0;
   try {
     await server.close();
-  } finally {
-    process.exit(0);
+  } catch (err) {
+    exitCode = 1;
+    server.log.error({ err }, "failed to close fastify");
   }
+
+  process.exit(exitCode);
 };
 
 process.on("SIGINT", () => shutdown("SIGINT"));
