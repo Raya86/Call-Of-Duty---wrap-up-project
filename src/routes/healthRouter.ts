@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { getDb } from "../db.js";
 
@@ -6,7 +6,7 @@ const healthRouter = async (server: FastifyInstance) => {
   server.route({
     method: "GET",
     url: "",
-    handler: async (req: FastifyRequest, res: FastifyReply) => {
+    handler: async (_req: FastifyRequest, res: FastifyReply) => {
       return res.status(StatusCodes.OK).send({ status: "ok" });
     },
   });
@@ -14,7 +14,7 @@ const healthRouter = async (server: FastifyInstance) => {
   server.route({
     method: "GET",
     url: "/db",
-    handler: async (req: FastifyRequest, res: FastifyReply) => {
+    handler: async (_req: FastifyRequest, res: FastifyReply) => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 1000);
 
