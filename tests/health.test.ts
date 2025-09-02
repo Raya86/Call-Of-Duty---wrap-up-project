@@ -1,4 +1,4 @@
-import { afterAll, expect, test, beforeAll } from "vitest";
+import { afterAll, expect, test, beforeAll, vi, afterEach } from "vitest";
 import { StatusCodes } from "http-status-codes";
 import { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app.js";
@@ -8,6 +8,10 @@ let testApp: FastifyInstance;
 
 beforeAll(async () => {
   testApp = await buildApp();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 test("test health check endpoint - successful", async () => {
