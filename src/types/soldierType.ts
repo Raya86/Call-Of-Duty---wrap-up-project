@@ -4,6 +4,10 @@ import { z } from "zod";
 // SCHEMAS //
 /////////////
 
+const IdSchema = z.object({
+  id: z.string().regex(/^\d{7}$/),
+});
+
 const RankSchema = z
   .object({
     name: z.string().optional(),
@@ -59,6 +63,7 @@ const RANKS = {
   6: "colonel",
 } as const;
 type Soldier = z.infer<typeof SoldierBaseSchema>;
+type SoldierId = z.infer<typeof IdSchema>;
 
 export {
   RANKS,
@@ -66,5 +71,6 @@ export {
   OutputSoldierSchema,
   ErrorSchema,
   BadRequestSchema,
+  IdSchema,
 };
-export type { Soldier };
+export type { Soldier, SoldierId };

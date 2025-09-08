@@ -1,9 +1,12 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { createSoldier } from "../repositories/soldierRepository.js";
-import type { Soldier } from "../types/soldierType.js";
 import { RANKS } from "../types/soldierType.js";
+import type { Soldier, SoldierId } from "../types/soldierType.js";
 import { CustomError } from "../errors/conflictError.js";
+import {
+  createSoldier,
+  getSoldierById,
+} from "../repositories/soldierRepository.js";
 
 const adjustNameValue = (soldier: Soldier) => {
   if (soldier.rank.name === undefined) {
@@ -42,4 +45,25 @@ const createSoldierHandler = async (req: FastifyRequest, res: FastifyReply) => {
   }
 };
 
-export { createSoldierHandler };
+const getSoldierHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    const soldier = await getSoldierById(req.params.id);
+
+    if (!soldier) {
+      throw new CustomError(
+        "NotFoundError",
+        "soldier not found",
+        StatusCodes.NOT_FOUND
+      );
+    }
+
+    return res.status(StatusCodes.OK).send(soldier);
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export { createSoldierHandler, getSoldierHandler };
