@@ -1,7 +1,10 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { createSoldier } from "../repositories/soldierRepository.js";
-import { SoldierBaseSchema, Soldier } from "../types/soldierType.js";
+import { SoldierBaseSchema, Soldier, SoldierId } from "../types/soldierType.js";
+import {
+  createSoldier,
+  getSoldierById,
+} from "../repositories/soldierRepository.js";
 
 const NAME_TO_VALUE = new Map<string, number>([
   ["private", 0],
@@ -57,4 +60,25 @@ const createSoldierHandler = async (req: FastifyRequest, res: FastifyReply) => {
   }
 };
 
-export { createSoldierHandler };
+const getSoldierHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    const soldier = await getSoldierById(req.params.id);
+
+    if (!soldier) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send({ error: "Soldier not found" });
+    }
+
+    return res.status(StatusCodes.OK).send(soldier);
+  } catch {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal server error" });
+  }
+};
+
+export { createSoldierHandler, getSoldierHandler };

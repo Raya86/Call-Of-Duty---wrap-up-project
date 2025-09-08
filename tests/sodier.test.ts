@@ -1,5 +1,5 @@
 import { afterAll, expect, test, beforeAll } from "vitest";
-import { StatusCodes } from "http-status-codes";
+import { RESET_CONTENT, StatusCodes } from "http-status-codes";
 import { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app.js";
 
@@ -9,7 +9,9 @@ beforeAll(async () => {
   testApp = await buildApp();
 });
 
-// test adding soldier
+/////////////////////////
+// test adding soldier //
+/////////////////////////
 
 const MOCK_SOLDIER_WITHOUT_RANK_NAME = {
   _id: "1111111",
@@ -84,7 +86,7 @@ test("create soldier with extra parameters ", async () => {
   expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
-test("create soldier with rank name and value", async () => {
+test("create soldier with rank name and value - 400", async () => {
   const res = await testApp.inject({
     method: "POST",
     url: "/soldiers",
@@ -133,6 +135,57 @@ test("fail create soldier duplicate in db - 409", async () => {
   });
   expect(res.statusCode).toBe(StatusCodes.CONFLICT);
   expect(res.json()).toEqual({ error: "Soldier already exists" });
+});
+
+//////////////////////////
+// test getting soldier //
+//////////////////////////
+
+const GET_SOLDIER = {
+  _id: "1122334",
+  name: "Johny a",
+  rank: {
+    value: 5,
+    name: "major",
+  },
+  limitations: ["night missions", "high altitude"],
+  createdAt: "2025-09-01T14:12:14.490Z",
+  updatedAt: "2025-09-01T14:12:14.490Z",
+};
+
+test("get soldier - Ok", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/soldiers/1122334",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual(GET_SOLDIER);
+});
+
+test("get soldier - 404", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/soldiers/9999999",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+  expect(res.json()).toEqual({ error: "Soldier not found" });
+});
+
+test("get soldier - 400", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/soldiers/12a",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  expect(res.json()).toEqual({
+    statusCode: 400,
+    code: "FST_ERR_VALIDATION",
+    error: "Bad Request",
+    message: "params/id Invalid string: must match pattern /^\\d{7}$/",
+  });
 });
 
 afterAll(async () => {

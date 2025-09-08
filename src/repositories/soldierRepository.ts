@@ -7,4 +7,10 @@ const createSoldier = async (soldier: Soldier) => {
   return await getDb().collection<Soldier>(COLLECTION_NAME).insertOne(soldier);
 };
 
-export { createSoldier };
+const getSoldierById = async (id: string) => {
+  return await getDb()
+    .collection<Soldier>(COLLECTION_NAME)
+    .findOne({ _id: id });
+};
+
+export { createSoldier, getSoldierById };
