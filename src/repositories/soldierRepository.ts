@@ -1,5 +1,5 @@
 import { getDb } from "../db.js";
-import type { Soldier } from "../types/soldierType.js";
+import type { Soldier, SoldierPartial } from "../types/soldierType.js";
 
 const COLLECTION_NAME = "soldiers";
 
@@ -13,4 +13,11 @@ const getSoldierById = async (id: string) => {
     .findOne({ _id: id });
 };
 
-export { createSoldier, getSoldierById };
+const getAllSoldiers = async (query: SoldierPartial) => {
+  return await getDb()
+    .collection<Soldier>(COLLECTION_NAME)
+    .find(query)
+    .toArray();
+};
+
+export { createSoldier, getSoldierById, getAllSoldiers };

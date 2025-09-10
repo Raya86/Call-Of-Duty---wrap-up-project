@@ -8,10 +8,10 @@ const IdSchema = z.object({
   id: z.string().regex(/^\d{7}$/),
 });
 
-const RankSchema = z
+const RankDbInputSchema = z
   .object({
     name: z.string().optional(),
-    value: z.number().int().min(0).max(6).optional(),
+    value: z.coerce.number().int().min(0).max(6).optional(),
   })
   .refine((schema) => {
     return !(
@@ -42,9 +42,9 @@ const checkDate = () =>
   }, z.date());
 
 const SoldierBaseSchema = z.object({
-  _id: z.string().regex(/^\d{7}$/),
+  _id: IdSchema.shape.id,
   name: z.string().min(3).max(50),
-  rank: RankSchema,
+  rank: RankDbInputSchema,
   limitations: z
     .array(
       z
@@ -70,12 +70,41 @@ const BadRequestSchema = z.object({
   message: z.string(),
 });
 
+const limitationsToArray = z
+  .union([z.array(z.string()), z.string()])
+  .transform((v) => (Array.isArray(v) ? v : v.split(",")))
+  .transform((arr) => arr.map((s) => s.trim().toLowerCase()));
+
+const SoldierQuerySchema = SoldierBaseSchema.extend({
+  limitations: limitationsToArray.optional(),
+  rankName: z.string().optional(),
+  rankValue: z.coerce.number().int().optional(),
+})
+  .partial()
+  .transform((data) => {
+    const { rankName, rankValue, limitations, ...rest } = data;
+
+    return {
+      ...rest,
+      ...(rankName !== undefined ? { ["rank.name"]: rankName } : {}),
+      ...(rankValue !== undefined ? { ["rank.value"]: rankValue } : {}),
+      ...(limitations !== undefined && limitations.length > 0
+        ? { limitations: { $all: limitations } }
+        : {}),
+    };
+  });
+
+const GetSoldierSchema = SoldierBaseSchema.extend({
+  rank: RankDbOutputSchema,
+});
+
 ///////////
 // TYPES //
 ///////////
 
 type Soldier = z.infer<typeof SoldierBaseSchema>;
 type SoldierId = { id: string };
+type SoldierPartial = z.infer<typeof SoldierQuerySchema>;
 
 export {
   SoldierBaseSchema,
@@ -83,5 +112,7 @@ export {
   ErrorSchema,
   BadRequestSchema,
   IdSchema,
+  SoldierQuerySchema,
+  GetSoldierSchema,
 };
-export type { Soldier, SoldierId };
+export type { Soldier, SoldierId, SoldierPartial };

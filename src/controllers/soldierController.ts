@@ -1,9 +1,15 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { SoldierBaseSchema, Soldier, SoldierId } from "../types/soldierType.js";
+import {
+  SoldierBaseSchema,
+  Soldier,
+  SoldierId,
+  SoldierPartial,
+} from "../types/soldierType.js";
 import {
   createSoldier,
   getSoldierById,
+  getAllSoldiers,
 } from "../repositories/soldierRepository.js";
 
 const NAME_TO_VALUE = new Map<string, number>([
@@ -81,4 +87,19 @@ const getSoldierHandler = async (
   }
 };
 
-export { createSoldierHandler, getSoldierHandler };
+const getAllSoldiersHandler = async (
+  req: FastifyRequest<{ Querystring: SoldierPartial }>,
+  res: FastifyReply
+) => {
+  try {
+    const soldiers = await getAllSoldiers(req.query);
+
+    return res.status(StatusCodes.OK).send(soldiers);
+  } catch {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal server error" });
+  }
+};
+
+export { createSoldierHandler, getSoldierHandler, getAllSoldiersHandler };
