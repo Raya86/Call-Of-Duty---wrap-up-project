@@ -5,13 +5,17 @@ import {
   OutputSoldierSchema,
   SoldierBaseSchema,
   IdSchema,
+  GetSoldierSchema,
+  SoldierQuerySchema,
 } from "../types/soldierType.js";
 import { StatusCodes } from "http-status-codes";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import {
   createSoldierHandler,
   getSoldierHandler,
+  getSoldiersQueryHandler,
 } from "../controllers/soldierController.js";
+import z from "zod";
 
 const soldierRouter = async (app: FastifyInstance) => {
   const server = app.withTypeProvider<ZodTypeProvider>();
@@ -44,6 +48,20 @@ const soldierRouter = async (app: FastifyInstance) => {
       },
     },
     getSoldierHandler
+  );
+  server.get(
+    "",
+    {
+      schema: {
+        querystring: SoldierQuerySchema,
+        response: {
+          [StatusCodes.OK]: z.array(GetSoldierSchema),
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    getSoldiersQueryHandler
   );
 };
 
