@@ -70,6 +70,8 @@ const BadRequestSchema = z.object({
   message: z.string(),
 });
 
+const NoContentSchema = z.null();
+
 const limitationsToArray = z
   .union([z.array(z.string()), z.string()])
   .transform((v) => (Array.isArray(v) ? v : v.split(",")))
@@ -111,6 +113,7 @@ export {
   OutputSoldierSchema,
   ErrorSchema,
   BadRequestSchema,
+  NoContentSchema,
   IdSchema,
   SoldierQuerySchema,
   GetSoldierSchema,

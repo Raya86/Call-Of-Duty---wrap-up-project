@@ -20,4 +20,10 @@ const getAllSoldiers = async (query: SoldierPartial) => {
     .toArray();
 };
 
-export { createSoldier, getSoldierById, getAllSoldiers };
+const deleteSoldierById = async (id: string) => {
+  return await getDb()
+    .collection<Soldier>(COLLECTION_NAME)
+    .deleteOne({ _id: id });
+};
+
+export { createSoldier, getSoldierById, getAllSoldiers, deleteSoldierById };

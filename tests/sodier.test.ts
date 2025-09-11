@@ -313,6 +313,44 @@ test("get soldier - 400", async () => {
   });
 });
 
+///////////////////////////
+// test deleting soldier //
+///////////////////////////
+
+test("delete soldier - Ok", async () => {
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: "/soldiers/1111111",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+});
+
+test("delete soldier - 404", async () => {
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: "/soldiers/1111111",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+  expect(res.json()).toEqual({ error: "Soldier not found" });
+});
+
+test("delete soldier - 400", async () => {
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: "/soldiers/111a11",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  expect(res.json()).toEqual({
+    statusCode: 400,
+    code: "FST_ERR_VALIDATION",
+    error: "Bad Request",
+    message: "params/id Invalid string: must match pattern /^\\d{7}$/",
+  });
+});
+
 afterAll(async () => {
   await testApp.close();
 });

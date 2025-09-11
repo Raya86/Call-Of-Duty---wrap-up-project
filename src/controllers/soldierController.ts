@@ -1,16 +1,17 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import {
+  createSoldier,
+  getSoldierById,
+  getAllSoldiers,
+  deleteSoldierById,
+} from "../repositories/soldierRepository.js";
+import {
   SoldierBaseSchema,
   Soldier,
   SoldierId,
   SoldierPartial,
 } from "../types/soldierType.js";
-import {
-  createSoldier,
-  getSoldierById,
-  getAllSoldiers,
-} from "../repositories/soldierRepository.js";
 
 const NAME_TO_VALUE = new Map<string, number>([
   ["private", 0],
@@ -102,4 +103,30 @@ const getAllSoldiersHandler = async (
   }
 };
 
-export { createSoldierHandler, getSoldierHandler, getAllSoldiersHandler };
+const deleteSoldierHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    const deleteRes = await deleteSoldierById(req.params.id);
+
+    if (deleteRes.deletedCount === 0) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send({ error: "Soldier not found" });
+    }
+
+    return res.status(StatusCodes.NO_CONTENT).send();
+  } catch {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal server error" });
+  }
+};
+
+export {
+  createSoldierHandler,
+  getSoldierHandler,
+  getAllSoldiersHandler,
+  deleteSoldierHandler,
+};
