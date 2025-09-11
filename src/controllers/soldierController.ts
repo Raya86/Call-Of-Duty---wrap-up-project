@@ -11,6 +11,7 @@ import {
   createSoldier,
   getSoldierById,
   getSoldiersQuery,
+  deleteSoldierById,
 } from "../repositories/soldierRepository.js";
 
 const adjustNameValue = (soldier: Soldier) => {
@@ -84,4 +85,30 @@ const getSoldiersQueryHandler = async (
   }
 };
 
-export { createSoldierHandler, getSoldierHandler, getSoldiersQueryHandler };
+const deleteSoldierHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    const deleteRes = await deleteSoldierById(req.params.id);
+
+    if (deleteRes.deletedCount === 0) {
+      throw new CustomError(
+        "NotFoundError",
+        "soldier not found",
+        StatusCodes.NOT_FOUND
+      );
+    }
+
+    return res.status(StatusCodes.NO_CONTENT).send();
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export {
+  createSoldierHandler,
+  getSoldierHandler,
+  getSoldiersQueryHandler,
+  deleteSoldierHandler,
+};
