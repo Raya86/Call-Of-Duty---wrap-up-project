@@ -6,6 +6,7 @@ import {
   getAllSoldiers,
   deleteSoldierById,
   updateSoldier,
+  updateLimitations,
 } from "../repositories/soldierRepository.js";
 import {
   SoldierBaseSchema,
@@ -145,7 +146,23 @@ const updateSoldierHandler = async (
 
     return res.status(StatusCodes.OK).send(await getSoldierById(req.params.id));
   } catch (err: any) {
-    
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal server error" });
+  }
+};
+
+const appendLimitationsHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    const soldier = SoldierUpdateSchema.parse(req.body);
+    await updateLimitations(req.params.id, soldier);
+
+    return res.status(StatusCodes.OK).send(await getSoldierById(req.params.id));
+  } catch (err: any) {
+
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .send({ error: "Internal server error" });
@@ -158,4 +175,5 @@ export {
   getAllSoldiersHandler,
   deleteSoldierHandler,
   updateSoldierHandler,
+  appendLimitationsHandler,
 };

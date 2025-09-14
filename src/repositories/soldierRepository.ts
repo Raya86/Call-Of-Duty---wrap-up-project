@@ -39,10 +39,26 @@ const updateSoldier = async (id: string, soldier: SoldierUpdate) => {
     );
 };
 
+const updateLimitations = async (
+  id: string,
+  soldierLimitations: SoldierUpdate
+) => {
+  return await getDb()
+    .collection<Soldier>(COLLECTION_NAME)
+    .updateOne(
+      { _id: id },
+      {
+        $addToSet: { limitations: { $each: soldierLimitations.limitations } },
+        $currentDate: { updatedAt: true },
+      }
+    );
+};
+
 export {
   createSoldier,
   getSoldierById,
   getAllSoldiers,
   deleteSoldierById,
   updateSoldier,
+  updateLimitations,
 };
