@@ -13,6 +13,7 @@ import {
   getSoldiersQuery,
   deleteSoldierById,
   updateSoldier,
+  updateLimitations,
 } from "../repositories/soldierRepository.js";
 
 const adjustRankToValue = (soldier: Partial<Soldier>) => {
@@ -138,10 +139,27 @@ const updateSoldierHandler = async (
   }
 };
 
+const appendLimitationsHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    const soldier = req.body as Soldier;
+    await updateLimitations(req.params.id, soldier);
+
+    return res.status(StatusCodes.OK).send(await getSoldierById(req.params.id));
+  } catch (err: any) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal server error" });
+  }
+};
+
 export {
   createSoldierHandler,
   getSoldierHandler,
   getSoldiersQueryHandler,
   deleteSoldierHandler,
   updateSoldierHandler,
+  appendLimitationsHandler,
 };

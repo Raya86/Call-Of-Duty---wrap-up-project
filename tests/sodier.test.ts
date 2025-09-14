@@ -450,6 +450,104 @@ test("update soldier with _id - error", async () => {
   expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
 });
 
+////////////////////////////////
+// test appending limitations //
+////////////////////////////////
+
+const MOCK_UPDATED_LIMITATIONS_1 = {
+  _id: "2222222",
+  name: "test update 2",
+  rank: {
+    value: 6,
+    name: "colonel",
+  },
+  limitations: ["night missions", "heat", "cold", "hights"],
+};
+
+const MOCK_UPDATED_LIMITATIONS_2 = {
+  _id: "2222222",
+  name: "test update 2",
+  rank: {
+    value: 6,
+    name: "colonel",
+  },
+  limitations: ["night missions", "heat", "cold", "hights", "food"],
+};
+
+test("append limitations", async () => {
+  const res = await testApp.inject({
+    method: "PUT",
+    url: "/soldiers/2222222/limitations",
+    body: {
+      name: "test update",
+      rank: {
+        value: 6,
+      },
+      limitations: ["COld", "hights"],
+    },
+  });
+
+  const { createdAt, updatedAt, ...soldierWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_LIMITATIONS_1);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("append limitations with extra parameters ", async () => {
+  const res = await testApp.inject({
+    method: "PUT",
+    url: "/soldiers/2222222/limitations",
+    body: {
+      name: "test update 2",
+      limitations: ["food"],
+      somethingElse: "not suppose to be here",
+    },
+  });
+
+  const { createdAt, updatedAt, ...soldierWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_LIMITATIONS_2);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("append limitations enter number - error", async () => {
+  const res = await testApp.inject({
+    method: "PUT",
+    url: "/soldiers/2222222/limitations",
+    body: {
+      rank: {
+        name: "colonel",
+      },
+      limitations: [121],
+    },
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+});
+
+test("append limitations id format - 400", async () => {
+  const res = await testApp.inject({
+    method: "PUT",
+    url: "/soldiers/12a/limitations",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  expect(res.json()).toEqual({
+    statusCode: 400,
+    code: "FST_ERR_VALIDATION",
+    error: "Bad Request",
+    message: "params/id Invalid string: must match pattern /^\\d{7}$/",
+  });
+});
+
 afterAll(async () => {
   await testApp.close();
 });

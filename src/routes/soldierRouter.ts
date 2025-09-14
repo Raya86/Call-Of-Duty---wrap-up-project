@@ -18,6 +18,7 @@ import {
   getSoldiersQueryHandler,
   deleteSoldierHandler,
   updateSoldierHandler,
+  appendLimitationsHandler,
 } from "../controllers/soldierController.js";
 import z from "zod";
 
@@ -96,6 +97,22 @@ const soldierRouter = async (app: FastifyInstance) => {
       },
     },
     updateSoldierHandler
+  );
+  server.put(
+    "/:id/limitations",
+    {
+      schema: {
+        params: IdSchema,
+        body: SoldierUpdateSchema,
+        response: {
+          [StatusCodes.OK]: OutputSoldierSchema,
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.NOT_FOUND]: ErrorSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    appendLimitationsHandler
   );
 };
 
