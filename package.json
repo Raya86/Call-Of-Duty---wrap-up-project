@@ -1,0 +1,43 @@
+{
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "name": "call-of-duty---wrap-up-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js ",
+    "dev": "npm run infra:up && tsx --env-file=.env --watch src/index.ts | pino-pretty ",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "test": "vitest --run ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Raya86/Call-Of-Duty---wrap-up-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Raya86/Call-Of-Duty---wrap-up-project/issues"
+  },
+  "homepage": "https://github.com/Raya86/Call-Of-Duty---wrap-up-project#readme",
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@types/node": "^24.3.0",
+    "dotenv": "^17.2.2",
+    "pino-pretty": "^13.1.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "fastify": "^5.5.0",
+    "http-status-codes": "^2.3.0",
+    "mongodb": "^6.18.0"
+  }
+}
