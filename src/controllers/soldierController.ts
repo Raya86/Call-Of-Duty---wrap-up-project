@@ -149,9 +149,7 @@ const appendLimitationsHandler = async (
 
     return res.status(StatusCodes.OK).send(await getSoldierById(req.params.id));
   } catch (err: any) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ error: "Internal server error" });
+    throw err;
   }
 };
 
