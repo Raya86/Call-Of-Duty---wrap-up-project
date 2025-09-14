@@ -8,6 +8,7 @@ import {
   GetSoldierSchema,
   SoldierQuerySchema,
   NoContentSchema,
+  SoldierUpdateSchema,
 } from "../types/soldierType.js";
 import { StatusCodes } from "http-status-codes";
 import {
@@ -15,6 +16,7 @@ import {
   getSoldierHandler,
   getAllSoldiersHandler,
   deleteSoldierHandler,
+  updateSoldierHandler,
 } from "../controllers/soldierController.js";
 import z from "zod";
 
@@ -77,6 +79,21 @@ const soldierRouter = async (server: FastifyInstance) => {
       },
     },
     deleteSoldierHandler
+  );
+  server.patch(
+    "/:id",
+    {
+      schema: {
+        body: SoldierUpdateSchema,
+        response: {
+          [StatusCodes.OK]: OutputSoldierSchema,
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.NOT_FOUND]: ErrorSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    updateSoldierHandler
   );
 };
 

@@ -1,5 +1,9 @@
 import { getDb } from "../db.js";
-import type { Soldier, SoldierPartial } from "../types/soldierType.js";
+import type {
+  Soldier,
+  SoldierPartial,
+  SoldierUpdate,
+} from "../types/soldierType.js";
 
 const COLLECTION_NAME = "soldiers";
 
@@ -26,4 +30,19 @@ const deleteSoldierById = async (id: string) => {
     .deleteOne({ _id: id });
 };
 
-export { createSoldier, getSoldierById, getAllSoldiers, deleteSoldierById };
+const updateSoldier = async (id: string, soldier: SoldierUpdate) => {
+  return await getDb()
+    .collection<Soldier>(COLLECTION_NAME)
+    .updateOne(
+      { _id: id },
+      { $set: soldier, $currentDate: { updatedAt: true } }
+    );
+};
+
+export {
+  createSoldier,
+  getSoldierById,
+  getAllSoldiers,
+  deleteSoldierById,
+  updateSoldier,
+};

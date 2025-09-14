@@ -351,6 +351,105 @@ test("delete soldier - 400", async () => {
   });
 });
 
+///////////////////////////
+// test updating soldier //
+///////////////////////////
+
+const MOCK_UPDATED_SOLDIER_1 = {
+  _id: "2222222",
+  name: "test update",
+  rank: {
+    value: 6,
+    name: "colonel",
+  },
+  limitations: ["night missions", "heat"],
+};
+
+const MOCK_UPDATED_SOLDIER_2 = {
+  _id: "2222222",
+  name: "test update 2",
+  rank: {
+    value: 6,
+    name: "colonel",
+  },
+  limitations: ["night missions", "heat"],
+};
+
+test("update soldier", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/soldiers/2222222",
+    body: {
+      name: "test update",
+      rank: {
+        value: 6,
+      },
+      limitations: ["night miSsions", "heat"],
+    },
+  });
+
+  const { createdAt, updatedAt, ...soldierWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_SOLDIER_1);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("update soldier with extra parameters ", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/soldiers/2222222",
+    body: {
+      _id: "2222222",
+      name: "test update 2",
+      somethingElse: "not suppose to be here",
+    },
+  });
+
+  const { createdAt, updatedAt, ...soldierWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_SOLDIER_2);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("update soldier with rank name and value - 400", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/soldiers/2222222",
+    body: {
+      name: "test update",
+      rank: {
+        name: "major",
+        value: 5,
+      },
+    },
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+});
+
+test("update soldier with _id - error", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/soldiers/2222222",
+    body: {
+      _id: "2222280",
+      rank: {
+        name: "colonel",
+      },
+    },
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+});
+
 afterAll(async () => {
   await testApp.close();
 });

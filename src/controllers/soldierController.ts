@@ -5,12 +5,15 @@ import {
   getSoldierById,
   getAllSoldiers,
   deleteSoldierById,
+  updateSoldier,
 } from "../repositories/soldierRepository.js";
 import {
   SoldierBaseSchema,
   Soldier,
   SoldierId,
   SoldierPartial,
+  SoldierUpdateSchema,
+  SoldierUpdate,
 } from "../types/soldierType.js";
 
 const NAME_TO_VALUE = new Map<string, number>([
@@ -33,13 +36,15 @@ const VALUE_TO_NAME = new Map<number, string>([
   [6, "colonel"],
 ]);
 
-const adjustNameValue = (soldier: Soldier) => {
-  if (soldier.rank.name === undefined) {
-    soldier.rank.name = VALUE_TO_NAME.get(soldier.rank.value!);
-  }
+const adjustNameValue = (soldier: Soldier | SoldierUpdate) => {
+  if (soldier.rank) {
+    if (soldier.rank.name === undefined) {
+      soldier.rank.name = VALUE_TO_NAME.get(soldier.rank.value!);
+    }
 
-  if (soldier.rank.value === undefined) {
-    soldier.rank.value = NAME_TO_VALUE.get(soldier.rank.name?.toLowerCase()!);
+    if (soldier.rank.value === undefined) {
+      soldier.rank.value = NAME_TO_VALUE.get(soldier.rank.name?.toLowerCase()!);
+    }
   }
 };
 
@@ -51,7 +56,7 @@ const createSoldierHandler = async (req: FastifyRequest, res: FastifyReply) => {
 
     return res.status(StatusCodes.CREATED).send(soldier);
   } catch (err: any) {
-    if (err.name === "ZodError") {      
+    if (err.name === "ZodError") {
       throw err;
     }
 
@@ -124,9 +129,33 @@ const deleteSoldierHandler = async (
   }
 };
 
+const updateSoldierHandler = async (
+  req: FastifyRequest<{ Params: SoldierId }>,
+  res: FastifyReply
+) => {
+  try {
+    let soldier = SoldierUpdateSchema.parse(req.body);
+    adjustNameValue(soldier);
+    
+    if ((await updateSoldier(req.params.id, soldier)).modifiedCount < 1) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .send({ error: "Soldier not found" });
+    }
+
+    return res.status(StatusCodes.OK).send(await getSoldierById(req.params.id));
+  } catch (err: any) {
+    
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ error: "Internal server error" });
+  }
+};
+
 export {
   createSoldierHandler,
   getSoldierHandler,
   getAllSoldiersHandler,
   deleteSoldierHandler,
+  updateSoldierHandler,
 };

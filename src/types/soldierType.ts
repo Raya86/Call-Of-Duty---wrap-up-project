@@ -100,6 +100,10 @@ const GetSoldierSchema = SoldierBaseSchema.extend({
   rank: RankDbOutputSchema,
 });
 
+const SoldierUpdateSchema = SoldierBaseSchema.extend({
+  limitations: limitationsToArray.optional(),
+}).partial();
+
 ///////////
 // TYPES //
 ///////////
@@ -107,6 +111,7 @@ const GetSoldierSchema = SoldierBaseSchema.extend({
 type Soldier = z.infer<typeof SoldierBaseSchema>;
 type SoldierId = { id: string };
 type SoldierPartial = z.infer<typeof SoldierQuerySchema>;
+type SoldierUpdate = z.infer<typeof SoldierUpdateSchema>;
 
 export {
   SoldierBaseSchema,
@@ -117,5 +122,6 @@ export {
   IdSchema,
   SoldierQuerySchema,
   GetSoldierSchema,
+  SoldierUpdateSchema,
 };
-export type { Soldier, SoldierId, SoldierPartial };
+export type { Soldier, SoldierId, SoldierPartial, SoldierUpdate };
