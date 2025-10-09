@@ -549,5 +549,9 @@ test("append limitations id format - 400", async () => {
 });
 
 afterAll(async () => {
+  await testApp.inject({
+    method: "DELETE",
+    url: "/soldiers/2222222",
+  });
   await testApp.close();
 });

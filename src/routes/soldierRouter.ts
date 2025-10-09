@@ -1,15 +1,17 @@
 import type { FastifyInstance } from "fastify";
 import {
-  BadRequestSchema,
-  ErrorSchema,
   OutputSoldierSchema,
   SoldierBaseSchema,
   IdSchema,
   GetSoldierSchema,
   SoldierQuerySchema,
-  NoContentSchema,
   SoldierUpdateSchema,
 } from "../types/soldierType.js";
+import {
+  BadRequestSchema,
+  ErrorSchema,
+  NoContentSchema,
+} from "../types/errorType.js";
 import { StatusCodes } from "http-status-codes";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import {
