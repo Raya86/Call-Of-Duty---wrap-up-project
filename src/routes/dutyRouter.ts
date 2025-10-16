@@ -1,9 +1,16 @@
 import type { FastifyInstance } from "fastify";
-import { DutyDbInputSchema } from "../types/dutyType.js";
+import {
+  DutyDbInputSchema,
+  DutyQuerySchema,
+} from "../types/dutyType.js";
 import { BadRequestSchema, ErrorSchema } from "../types/errorType.js";
 import { StatusCodes } from "http-status-codes";
-import { createDutyHandler } from "../controllers/dutyController.js";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
+import {
+  createDutyHandler,
+  getDutiesQueryHandler,
+} from "../controllers/dutyController.js";
+import z from "zod";
 
 const dutyRouter = async (app: FastifyInstance) => {
   const server = app.withTypeProvider<ZodTypeProvider>();
@@ -21,6 +28,20 @@ const dutyRouter = async (app: FastifyInstance) => {
       },
     },
     createDutyHandler
+  );
+  server.get(
+    "",
+    {
+      schema: {
+        querystring: DutyQuerySchema,
+        response: {
+          [StatusCodes.OK]: z.array(DutyDbInputSchema),
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    getDutiesQueryHandler
   );
 };
 

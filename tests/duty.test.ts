@@ -253,6 +253,129 @@ test("create duty with min rank bigger then max rank - 400", async () => {
   expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
 });
 
+////////////////////////////////
+// test getting duty by query //
+////////////////////////////////
+
+const DUTIES = [
+  {
+    name: "test query",
+    description:
+      "Oversee and secure the northern gate area during nighttime operations.",
+    location: {
+      type: "Point",
+      coordinates: [40.7818, 40.0853],
+    },
+    startTime: "2026-10-09T22:00:00.000Z",
+    endTime: "2026-10-10T06:00:00.000Z",
+    constraints: ["check a", "Check b"],
+    soldiersRequired: 3,
+    value: 2,
+    minRank: 2,
+    maxRank: 4,
+    createdAt: "2025-10-09T07:44:11.625Z",
+    updatedAt: "2025-10-09T07:44:11.625Z",
+    soldiers: [],
+    status: "unscheduled",
+    statusHistory: [
+      {
+        status: "unscheduled",
+        date: "2025-10-09T07:44:11.627Z",
+      },
+    ],
+  },
+  {
+    name: "Morning lookout - Southeaster Base",
+    description: "check Southeaster Base",
+    location: {
+      type: "Point",
+      coordinates: [15.7818, 5.0853],
+    },
+    startTime: "2026-10-13T22:00:00.000Z",
+    endTime: "2026-10-17T06:00:00.000Z",
+    constraints: [],
+    soldiersRequired: 1,
+    value: 2,
+    minRank: 2,
+    createdAt: "2025-10-09T07:44:11.645Z",
+    updatedAt: "2025-10-09T07:44:11.645Z",
+    soldiers: [],
+    status: "unscheduled",
+    statusHistory: [
+      {
+        status: "unscheduled",
+        date: "2025-10-09T07:44:11.645+00:00",
+      },
+    ],
+  },
+];
+
+test("get duty by query - name", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties?name=test query",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual([DUTIES[0]]);
+});
+
+test("get duty by query - constraints", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties?constraints=check a, Check b",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual([DUTIES[0]]);
+});
+
+test("get duty by query - location coordinates", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties?locationCoordinates=40.7818,40.0853",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual([DUTIES[0]]);
+});
+
+test("get duty by query - constraints wrong order", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties?constraints=Check b, check a",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual([DUTIES[0]]);
+});
+
+test("get duty by query - no result", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties?&name=Johny",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual([]);
+});
+
+test("get duty - 400", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties?location=40.7818,40.0853",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  expect(res.json()).toEqual({
+    statusCode: 400,
+    code: "FST_ERR_VALIDATION",
+    error: "Bad Request",
+    message:
+      "querystring/location Invalid input: expected object, received string",
+  });
+});
+
 afterAll(async () => {
   await testApp.close();
 });

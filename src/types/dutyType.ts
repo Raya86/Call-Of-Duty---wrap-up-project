@@ -60,11 +60,49 @@ const DutyDbInputSchema = DutyBaseSchema.safeExtend({
   };
 });
 
+const constraintsToArray = z
+  .union([z.array(z.string()), z.string()])
+  .transform((v) => (Array.isArray(v) ? v : v.split(",")))
+  .transform((arr) => arr.map((s) => s.trim()));
+
+const locationCoordinates = z
+  .union([z.string(), z.array(z.union([z.string(), z.number()]))])
+  .transform((v) => (Array.isArray(v) ? v : v.split(",")))
+  .transform((a) => a.map((x) => (typeof x === "string" ? x.trim() : x)))
+  .transform((a) => a.map((x) => (typeof x === "string" ? Number(x) : x)))
+  .refine((a) => a.every(Number.isFinite) && a.length >= 2, {})
+  .transform(([lon, lat]) => [lon, lat] as [number, number]);
+
+const DutyQuerySchema = DutyBaseSchema.partial()
+  .extend({
+    constraints: constraintsToArray.optional(),
+    locationType: z.string().optional(),
+    locationCoordinates: locationCoordinates.optional(),
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+  })
+  .transform((data) => {
+    const { locationType, locationCoordinates, constraints, ...rest } = data;
+
+    return {
+      ...rest,
+      ...(locationType !== undefined
+        ? { ["location.type"]: locationType }
+        : {}),
+      ...(locationCoordinates !== undefined
+        ? { ["location.coordinates"]: locationCoordinates as [number, number] }
+        : {}),
+      ...(constraints !== undefined && constraints.length > 0
+        ? { constraints: { $all: constraints } }
+        : {}),
+    };
+  });
+
 ///////////
 // TYPES //
 ///////////
 
 type Duty = z.infer<typeof DutyDbInputSchema>;
 
-export { DutyBaseSchema, DutyDbInputSchema };
+export { DutyBaseSchema, DutyDbInputSchema, DutyQuerySchema };
 export type { Duty };

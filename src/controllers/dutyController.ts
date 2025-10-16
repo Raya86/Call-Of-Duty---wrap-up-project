@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import type { Duty } from "../types/dutyType.js";
-import { createDuty } from "../repositories/dutyRepository.js";
+import { createDuty, getDutiesQuery } from "../repositories/dutyRepository.js";
 
 const createDutyHandler = async (req: FastifyRequest, res: FastifyReply) => {
   try {
@@ -16,4 +16,17 @@ const createDutyHandler = async (req: FastifyRequest, res: FastifyReply) => {
   }
 };
 
-export { createDutyHandler };
+const getDutiesQueryHandler = async (
+  req: FastifyRequest<{ Querystring: Duty }>,
+  res: FastifyReply
+) => {
+  try {
+    const duties = await getDutiesQuery(req.query);
+
+    return res.status(StatusCodes.OK).send(duties);
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export { createDutyHandler, getDutiesQueryHandler };
