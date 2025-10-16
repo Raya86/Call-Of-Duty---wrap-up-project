@@ -376,6 +376,45 @@ test("get duty - 400", async () => {
   });
 });
 
+///////////////////////
+// test getting duty //
+///////////////////////
+
+test("get duty - Ok", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties/68e767cbc06741a252443e2b",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(res.json()).toEqual(DUTIES[0]);
+});
+
+test("get duty - 404", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties/68e767cbc06741a252443e2a",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+  expect(res.json()).toEqual({ error: "Not Found" });
+});
+
+test("get duty - 400", async () => {
+  const res = await testApp.inject({
+    method: "GET",
+    url: "/duties/12a",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  expect(res.json()).toEqual({
+    statusCode: 400,
+    code: "FST_ERR_VALIDATION",
+    error: "Bad Request",
+    message: "params/id Invalid input",
+  });
+});
+
 afterAll(async () => {
   await testApp.close();
 });

@@ -1,7 +1,12 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import type { Duty } from "../types/dutyType.js";
-import { createDuty, getDutiesQuery } from "../repositories/dutyRepository.js";
+import type { Duty, DutyId } from "../types/dutyType.js";
+import {
+  createDuty,
+  getDutiesQuery,
+  getDutyById,
+} from "../repositories/dutyRepository.js";
+import { CustomError } from "../errors/conflictError.js";
 
 const createDutyHandler = async (req: FastifyRequest, res: FastifyReply) => {
   try {
@@ -29,4 +34,25 @@ const getDutiesQueryHandler = async (
   }
 };
 
-export { createDutyHandler, getDutiesQueryHandler };
+const getDutyByIdHandler = async (
+  req: FastifyRequest<{ Params: DutyId }>,
+  res: FastifyReply
+) => {
+  try {
+    const duty = await getDutyById(String(req.params.id));
+
+    if (!duty) {
+      throw new CustomError(
+        "NotFoundError",
+        "duty not found",
+        StatusCodes.NOT_FOUND
+      );
+    }
+
+    return res.status(StatusCodes.OK).send(duty);
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export { createDutyHandler, getDutiesQueryHandler, getDutyByIdHandler };

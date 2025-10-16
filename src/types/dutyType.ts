@@ -1,9 +1,18 @@
 import { z } from "zod";
 import { OutputSoldierSchema } from "./soldierType.js";
+import { ObjectId } from "mongodb";
 
 /////////////
 // SCHEMAS //
 /////////////
+
+const DutyIdSchema = z.object({
+  id: z
+    .string()
+    .trim()
+    .refine((s) => ObjectId.isValid(s))
+    .transform((s) => new ObjectId(s)),
+});
 
 const geoJSONPointSchema = z.object({
   type: z.literal("Point"),
@@ -103,6 +112,7 @@ const DutyQuerySchema = DutyBaseSchema.partial()
 ///////////
 
 type Duty = z.infer<typeof DutyDbInputSchema>;
+type DutyId = z.infer<typeof DutyIdSchema>;
 
-export { DutyBaseSchema, DutyDbInputSchema, DutyQuerySchema };
-export type { Duty };
+export { DutyBaseSchema, DutyDbInputSchema, DutyQuerySchema, DutyIdSchema };
+export type { Duty, DutyId };

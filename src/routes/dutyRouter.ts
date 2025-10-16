@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import {
   DutyDbInputSchema,
+  DutyIdSchema,
   DutyQuerySchema,
 } from "../types/dutyType.js";
 import { BadRequestSchema, ErrorSchema } from "../types/errorType.js";
@@ -9,6 +10,7 @@ import { ZodTypeProvider } from "fastify-type-provider-zod";
 import {
   createDutyHandler,
   getDutiesQueryHandler,
+  getDutyByIdHandler,
 } from "../controllers/dutyController.js";
 import z from "zod";
 
@@ -42,6 +44,21 @@ const dutyRouter = async (app: FastifyInstance) => {
       },
     },
     getDutiesQueryHandler
+  );
+    server.get(
+    "/:id",
+    {
+      schema: {
+        params: DutyIdSchema,
+        response: {
+          [StatusCodes.OK]: DutyDbInputSchema,
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.NOT_FOUND]: ErrorSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    getDutyByIdHandler
   );
 };
 

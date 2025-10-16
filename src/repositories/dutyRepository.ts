@@ -1,5 +1,6 @@
 import { getDb } from "../db.js";
 import type { Duty } from "../types/dutyType.js";
+import { ObjectId } from "mongodb";
 
 const COLLECTION_NAME = "duties";
 
@@ -9,4 +10,9 @@ const createDuty = async (duty: Duty) =>
 const getDutiesQuery = async (query: Duty) =>
   await getDb().collection<Duty>(COLLECTION_NAME).find(query).toArray();
 
-export { createDuty, getDutiesQuery };
+const getDutyById = async (id: string) =>
+  await getDb()
+    .collection<Duty>(COLLECTION_NAME)
+    .findOne({ _id: new ObjectId(id) });
+
+export { createDuty, getDutiesQuery, getDutyById };
