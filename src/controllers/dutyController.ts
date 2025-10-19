@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import type { Duty, DutyId } from "../types/dutyType.js";
 import {
   createDuty,
+  deleteDutyById,
   getDutiesQuery,
   getDutyById,
 } from "../repositories/dutyRepository.js";
@@ -55,4 +56,39 @@ const getDutyByIdHandler = async (
   }
 };
 
-export { createDutyHandler, getDutiesQueryHandler, getDutyByIdHandler };
+const deleteDutyHandler = async (
+  req: FastifyRequest<{ Params: DutyId }>,
+  res: FastifyReply
+) => {
+  try {
+    const duty = await getDutyById(String(req.params.id));
+
+    if (!duty) {
+      throw new CustomError(
+        "NotFoundError",
+        "duty not found",
+        StatusCodes.NOT_FOUND
+      );
+    }
+
+    if (duty.status === "scheduled") {
+      throw new CustomError(
+        "MethodNotAllowed",
+        "Scheduled duties cannot be removed",
+        StatusCodes.METHOD_NOT_ALLOWED
+      );
+    }
+    await deleteDutyById(String(req.params.id));
+
+    return res.status(StatusCodes.NO_CONTENT).send();
+  } catch (err: any) {
+    throw err;
+  }
+};
+
+export {
+  createDutyHandler,
+  getDutiesQueryHandler,
+  getDutyByIdHandler,
+  deleteDutyHandler,
+};

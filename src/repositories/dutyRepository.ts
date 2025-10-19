@@ -15,4 +15,9 @@ const getDutyById = async (id: string) =>
     .collection<Duty>(COLLECTION_NAME)
     .findOne({ _id: new ObjectId(id) });
 
-export { createDuty, getDutiesQuery, getDutyById };
+const deleteDutyById = async (id: string) =>
+  await getDb()
+    .collection<Duty>(COLLECTION_NAME)
+    .deleteOne({ _id: new ObjectId(id) });
+
+export { createDuty, getDutiesQuery, getDutyById, deleteDutyById };

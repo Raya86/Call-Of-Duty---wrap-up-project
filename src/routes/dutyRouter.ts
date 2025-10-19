@@ -4,11 +4,16 @@ import {
   DutyIdSchema,
   DutyQuerySchema,
 } from "../types/dutyType.js";
-import { BadRequestSchema, ErrorSchema } from "../types/errorType.js";
+import {
+  BadRequestSchema,
+  ErrorSchema,
+  NoContentSchema,
+} from "../types/errorType.js";
 import { StatusCodes } from "http-status-codes";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import {
   createDutyHandler,
+  deleteDutyHandler,
   getDutiesQueryHandler,
   getDutyByIdHandler,
 } from "../controllers/dutyController.js";
@@ -45,7 +50,7 @@ const dutyRouter = async (app: FastifyInstance) => {
     },
     getDutiesQueryHandler
   );
-    server.get(
+  server.get(
     "/:id",
     {
       schema: {
@@ -59,6 +64,21 @@ const dutyRouter = async (app: FastifyInstance) => {
       },
     },
     getDutyByIdHandler
+  );
+  server.delete(
+    "/:id",
+    {
+      schema: {
+        params: DutyIdSchema,
+        response: {
+          [StatusCodes.NO_CONTENT]: NoContentSchema,
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.NOT_FOUND]: ErrorSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    deleteDutyHandler
   );
 };
 

@@ -2,6 +2,10 @@ import { afterAll, expect, test, beforeAll } from "vitest";
 import { StatusCodes } from "http-status-codes";
 import { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app.js";
+import {
+  createDuty,
+  getDutiesQuery,
+} from "../src/repositories/dutyRepository.js";
 
 let testApp: FastifyInstance;
 
@@ -412,6 +416,85 @@ test("get duty - 400", async () => {
     code: "FST_ERR_VALIDATION",
     error: "Bad Request",
     message: "params/id Invalid input",
+  });
+});
+
+////////////////////////
+// test deleting duty //
+////////////////////////
+
+test("delete duty - Ok", async () => {
+  createDuty({
+    name: "made to be deleted",
+    description: "check Southeaster Base",
+    location: {
+      type: "Point",
+      coordinates: [15.7818, 5.0853],
+    },
+    startTime: new Date("2025-10-13T22:00:00.000Z"),
+    endTime: new Date("2025-10-17T06:00:00.000Z"),
+    constraints: [],
+    soldiersRequired: 1,
+    value: 2,
+    minRank: 2,
+    createdAt: new Date("2025-10-09T07:44:11.645Z"),
+    updatedAt: new Date("2025-10-09T07:44:11.645Z"),
+    soldiers: [],
+    status: "unscheduled",
+    statusHistory: [
+      {
+        status: "unscheduled",
+        date: new Date("2025-10-09T07:44:11.645+00:00"),
+      },
+    ],
+  });
+
+  const duty = (await getDutiesQuery({ name: "made to be deleted" } as any))[0];
+
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: `/duties/${duty._id.toString()}`,
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+});
+
+test("delete duty - 404", async () => {
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: "/duties/68e767cbc06741a252443e2a",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+  expect(res.json()).toEqual({ error: "Not Found" });
+});
+
+test("delete duty - 400", async () => {
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: "/duties/111a11",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  expect(res.json()).toEqual({
+    statusCode: 400,
+    code: "FST_ERR_VALIDATION",
+    error: "Bad Request",
+    message: "params/id Invalid input",
+  });
+});
+
+test("delete scheduled duty - 405", async () => {
+  const res = await testApp.inject({
+    method: "DELETE",
+    url: "/duties/69032892c7505d567db38ab5",
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.METHOD_NOT_ALLOWED);
+  expect(res.json()).toEqual({
+    statusCode: 405,
+    error: "Method Not Allowed",
+    message: "Scheduled duties cannot be removed",
   });
 });
 
