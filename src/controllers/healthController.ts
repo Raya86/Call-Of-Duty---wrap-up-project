@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { getDb } from "../db.js";
+import { checkDbHealth } from "../repositories/healthRepository.js";
 
 const healthHandler = async (_req: FastifyRequest, res: FastifyReply) => {
   return res.status(StatusCodes.OK).send({ status: "ok" });
@@ -11,7 +11,7 @@ const dbHealthHandler = async (_req: FastifyRequest, res: FastifyReply) => {
   const timeout = setTimeout(() => controller.abort(), 1000);
 
   try {
-    await getDb().command({ ping: 1 }, { signal: controller.signal });
+    await checkDbHealth(controller);
 
     return res.status(StatusCodes.OK).send({ status: "connected" });
   } catch {
