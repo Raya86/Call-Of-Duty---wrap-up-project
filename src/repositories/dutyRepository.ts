@@ -1,5 +1,5 @@
 import { getDb } from "../db.js";
-import type { Duty } from "../types/dutyType.js";
+import type { Duty, DutyUpdate } from "../types/dutyType.js";
 import { ObjectId } from "mongodb";
 
 const COLLECTION_NAME = "duties";
@@ -20,4 +20,12 @@ const deleteDutyById = async (id: string) =>
     .collection<Duty>(COLLECTION_NAME)
     .deleteOne({ _id: new ObjectId(id) });
 
-export { createDuty, getDutiesQuery, getDutyById, deleteDutyById };
+const updateDuty = async (id: string, duty: DutyUpdate) =>
+  await getDb()
+    .collection<Duty>(COLLECTION_NAME)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: duty, $currentDate: { updatedAt: true } }
+    );
+
+export { createDuty, getDutiesQuery, getDutyById, deleteDutyById, updateDuty };

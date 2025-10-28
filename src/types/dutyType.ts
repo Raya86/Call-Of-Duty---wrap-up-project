@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z, ZodObject, ZodRawShape } from "zod";
 import { OutputSoldierSchema } from "./soldierType.js";
 import { ObjectId } from "mongodb";
 
@@ -19,8 +19,37 @@ const geoJSONPointSchema = z.object({
   coordinates: z.array(z.number()).min(2),
 });
 
-const DutyBaseSchema = z
-  .object({
+const DutyRefinements = <T extends ZodObject<ZodRawShape>>(schema: T) => {
+  return schema
+    .refine(
+      (data: any) => {
+        if (data.startTime) {
+          return data.startTime.getTime() > new Date().getTime();
+        }
+        return true;
+      },
+      { message: "start date must be in the future" }
+    )
+    .refine(
+      (data: any) => {
+        if (data.startTime && data.endTime) {
+          return data.startTime.getTime() < data.endTime.getTime();
+        }
+        return true;
+      },
+      { message: "start date must be before end date" }
+    )
+    .refine(
+      (data: any) =>
+        data.minRank == null ||
+        data.maxRank == null ||
+        data.minRank < data.maxRank,
+      { message: "min rank must be smaller than max rank" }
+    );
+};
+
+const DutyBaseSchema = DutyRefinements(
+  z.object({
     name: z.string().min(3).max(50),
     description: z.string(),
     location: geoJSONPointSchema,
@@ -34,21 +63,7 @@ const DutyBaseSchema = z
     createdAt: z.coerce.date().default(() => new Date()),
     updatedAt: z.coerce.date().default(() => new Date()),
   })
-  .refine((data) => data.startTime.getTime() < data.endTime.getTime(), {
-    message: "start date must be before end date",
-  })
-  .refine((data) => data.startTime.getTime() > new Date().getTime(), {
-    message: "start date must be in the future",
-  })
-  .refine(
-    (data) =>
-      data.minRank == null ||
-      data.maxRank == null ||
-      data.minRank < data.maxRank,
-    {
-      message: "min rank must be in smaller then max rank",
-    }
-  );
+);
 
 const statusHistorySchema = z.object({
   status: z.string().default("unscheduled"),
@@ -107,12 +122,31 @@ const DutyQuerySchema = DutyBaseSchema.partial()
     };
   });
 
+const DutyUpdateSchema = DutyRefinements(
+  z
+    .object({
+      ...DutyBaseSchema.shape,
+      status: z.string().optional(),
+      constraints: constraintsToArray.optional(),
+      createdAt: z.coerce.date().optional(),
+      updatedAt: z.coerce.date().optional(),
+    })
+    .partial()
+);
+
 ///////////
 // TYPES //
 ///////////
 
 type Duty = z.infer<typeof DutyDbInputSchema>;
 type DutyId = z.infer<typeof DutyIdSchema>;
+type DutyUpdate = z.infer<typeof DutyUpdateSchema>;
 
-export { DutyBaseSchema, DutyDbInputSchema, DutyQuerySchema, DutyIdSchema };
-export type { Duty, DutyId };
+export {
+  DutyBaseSchema,
+  DutyDbInputSchema,
+  DutyQuerySchema,
+  DutyIdSchema,
+  DutyUpdateSchema,
+};
+export type { Duty, DutyId, DutyUpdate };

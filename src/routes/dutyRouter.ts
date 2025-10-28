@@ -3,6 +3,7 @@ import {
   DutyDbInputSchema,
   DutyIdSchema,
   DutyQuerySchema,
+  DutyUpdateSchema,
 } from "../types/dutyType.js";
 import {
   BadRequestSchema,
@@ -16,6 +17,7 @@ import {
   deleteDutyHandler,
   getDutiesQueryHandler,
   getDutyByIdHandler,
+  updateDutyHandler,
 } from "../controllers/dutyController.js";
 import z from "zod";
 
@@ -80,6 +82,23 @@ const dutyRouter = async (app: FastifyInstance) => {
     },
     deleteDutyHandler
   );
+  server.patch(
+    "/:id",
+    {
+      schema: {
+        body: DutyUpdateSchema,
+        response: {
+          [StatusCodes.OK]: DutyDbInputSchema,
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.NOT_FOUND]: ErrorSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    updateDutyHandler
+  );
+
+  return server;
 };
 
 export { dutyRouter };

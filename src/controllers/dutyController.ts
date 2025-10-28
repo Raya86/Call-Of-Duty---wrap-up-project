@@ -6,6 +6,7 @@ import {
   deleteDutyById,
   getDutiesQuery,
   getDutyById,
+  updateDuty,
 } from "../repositories/dutyRepository.js";
 import { CustomError } from "../errors/conflictError.js";
 
@@ -86,9 +87,53 @@ const deleteDutyHandler = async (
   }
 };
 
+const updateDutyHandler = async (
+  req: FastifyRequest<{ Params: DutyId }>,
+  res: FastifyReply
+) => {
+  try {
+    let duty = req.body as Duty;
+    const unUpdatedDuty = await getDutyById(String(req.params.id));
+
+    if (unUpdatedDuty!.status === "scheduled") {
+      throw new CustomError(
+        "MethodNotAllowed",
+        "Scheduled duties cannot be updated",
+        StatusCodes.METHOD_NOT_ALLOWED
+      );
+    }
+    const lastStatus = unUpdatedDuty!.statusHistory?.at(-1)?.status;
+
+    if (duty.status) {
+      if (duty.status !== lastStatus) {
+        duty.statusHistory = [
+          ...(unUpdatedDuty!.statusHistory ?? []),
+          { status: duty.status, date: new Date() },
+        ];
+      }
+    }
+    const { modifiedCount } = await updateDuty(String(req.params.id), duty);
+
+    if (modifiedCount < 1) {
+      throw new CustomError(
+        "NotFoundError",
+        "duty not found",
+        StatusCodes.NOT_FOUND
+      );
+    }
+
+    return res
+      .status(StatusCodes.OK)
+      .send(await getDutyById(String(req.params.id)));
+  } catch (err: any) {
+    throw err;
+  }
+};
+
 export {
   createDutyHandler,
   getDutiesQueryHandler,
   getDutyByIdHandler,
   deleteDutyHandler,
+  updateDutyHandler,
 };

@@ -4,6 +4,7 @@ import { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app.js";
 import {
   createDuty,
+  deleteDutyById,
   getDutiesQuery,
 } from "../src/repositories/dutyRepository.js";
 
@@ -496,6 +497,222 @@ test("delete scheduled duty - 405", async () => {
     error: "Method Not Allowed",
     message: "Scheduled duties cannot be removed",
   });
+});
+
+////////////////////////
+// test updating duty //
+////////////////////////
+
+const MOCK_UPDATED_DUTY_1 = {
+  name: "test update",
+  description:
+    "Oversee and secure the northern gate area during nighttime operations.",
+  location: {
+    type: "Point",
+    coordinates: [60.7818, 60.0853],
+  },
+  startTime: "2026-10-09T22:00:00.000Z",
+  endTime: "2026-10-10T06:00:00.000Z",
+  constraints: [
+    "Requires at least one officer with clearance level 2",
+    "Soldiers must have completed night training",
+  ],
+  soldiersRequired: 3,
+  value: 2,
+  minRank: 2,
+  maxRank: 4,
+  createdAt: "2025-10-19T11:49:56.346Z",
+  soldiers: [],
+  status: "unscheduled",
+  statusHistory: [
+    {
+      status: "unscheduled",
+      date: "2025-10-19T11:49:56.348Z",
+    },
+  ],
+};
+
+const MOCK_UPDATED_DUTY_2 = {
+  name: "test update 2",
+  description:
+    "Oversee and secure the northern gate area during nighttime operations.",
+  location: {
+    type: "Point",
+    coordinates: [60.7818, 60.0853],
+  },
+  startTime: "2026-10-09T22:00:00.000Z",
+  endTime: "2026-10-10T06:00:00.000Z",
+  constraints: [
+    "Requires at least one officer with clearance level 2",
+    "Soldiers must have completed night training",
+  ],
+  soldiersRequired: 3,
+  value: 2,
+  minRank: 2,
+  maxRank: 4,
+  createdAt: "2025-10-19T11:49:56.346Z",
+  soldiers: [],
+  status: "unscheduled",
+  statusHistory: [
+    {
+      status: "unscheduled",
+      date: "2025-10-19T11:49:56.348Z",
+    },
+  ],
+};
+
+const MOCK_UPDATED_DUTY_3 = {
+  name: "made to be deleted after update",
+  description: "LALA",
+  location: {
+    type: "Point",
+    coordinates: [15.7818, 5.0853],
+  },
+  startTime: "2026-10-13T22:00:00.000Z",
+  endTime: "2026-10-17T06:00:00.000Z",
+  constraints: [],
+  soldiersRequired: 1,
+  value: 2,
+  minRank: 2,
+  createdAt: "2025-10-09T07:44:11.645Z",
+  soldiers: [],
+  status: "scheduled",
+  statusHistory: [
+    {
+      status: "unscheduled",
+      date: "2025-10-09T07:44:11.645Z",
+    },
+    {
+      status: "scheduled",
+      date: expect.anything(),
+    },
+  ],
+};
+
+test("update duty", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/duties/68f4d06452296c5ce4ec5c7c",
+    body: {
+      name: "test update",
+      location: {
+        type: "Point",
+        coordinates: [60.7818, 60.0853],
+      },
+    },
+  });
+
+  const { updatedAt, ...dutyWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(dutyWithoutDate).toEqual(MOCK_UPDATED_DUTY_1);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("update duty with extra parameters ", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/duties/68f4d06452296c5ce4ec5c7c",
+    body: {
+      _id: "68f4d06452296c5ce4ec5c7c",
+      name: "test update 2",
+      somethingElse: "not suppose to be here",
+    },
+  });
+
+  const { updatedAt, ...dutyWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(dutyWithoutDate).toEqual(MOCK_UPDATED_DUTY_2);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("update duty with start time after end time - 400", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/duties/68f4d06452296c5ce4ec5c7c",
+    body: {
+      startTime: "2026-10-11T22:00:00.000Z",
+      endTime: "2026-10-10T06:00:00.000Z",
+    },
+  });
+
+  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+});
+
+test("update duty with _id - id does't change", async () => {
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: "/duties/68f4d06452296c5ce4ec5c7c",
+    body: {
+      _id: "68f4d06452296c5ce4ec5c7a",
+    },
+  });
+
+  const { updatedAt, ...dutyWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(dutyWithoutDate).toEqual(MOCK_UPDATED_DUTY_2);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+});
+
+test("update duty - update schedule history", async () => {
+  await createDuty({
+    name: "made to be deleted after update",
+    description: "LALA",
+    location: {
+      type: "Point",
+      coordinates: [15.7818, 5.0853],
+    },
+    startTime: new Date("2026-10-13T22:00:00.000Z"),
+    endTime: new Date("2026-10-17T06:00:00.000Z"),
+    constraints: [],
+    soldiersRequired: 1,
+    value: 2,
+    minRank: 2,
+    createdAt: new Date("2025-10-09T07:44:11.645Z"),
+    updatedAt: new Date("2025-10-09T07:44:11.645Z"),
+    soldiers: [],
+    status: "unscheduled",
+    statusHistory: [
+      {
+        status: "unscheduled",
+        date: new Date("2025-10-09T07:44:11.645+00:00"),
+      },
+    ],
+  });
+
+  const duty = (
+    await getDutiesQuery({ name: "made to be deleted after update" } as any)
+  )[0];
+
+  const res = await testApp.inject({
+    method: "PATCH",
+    url: `/duties/${duty._id.toString()}`,
+    body: {
+      status: "scheduled",
+    },
+  });
+
+  const { updatedAt, ...dutyWithoutDate } = {
+    ...res.json(),
+  };
+  const updatedAtDate = new Date(updatedAt);
+
+  expect(res.statusCode).toBe(StatusCodes.OK);
+  expect(dutyWithoutDate).toEqual(MOCK_UPDATED_DUTY_3);
+  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+
+  await deleteDutyById(duty._id.toString());
 });
 
 afterAll(async () => {
