@@ -1,12 +1,10 @@
 import type { FastifyInstance } from "fastify";
 import {
-  OutputSoldierSchema,
-  SoldierBaseSchema,
-  IdSchema,
-  GetSoldierSchema,
-  SoldierQuerySchema,
-  SoldierUpdateSchema,
-} from "../types/soldierType.js";
+  DutyDbInputSchema,
+  DutyIdSchema,
+  DutyQuerySchema,
+  DutyUpdateSchema,
+} from "../types/dutyType.js";
 import {
   BadRequestSchema,
   ErrorSchema,
@@ -15,66 +13,66 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import {
-  createSoldierHandler,
-  getSoldierHandler,
-  getSoldiersQueryHandler,
-  deleteSoldierHandler,
-  updateSoldierHandler,
-  appendLimitationsHandler,
-} from "../controllers/soldierController.js";
+  appendConstraintsHandler,
+  createDutyHandler,
+  deleteDutyHandler,
+  getDutiesQueryHandler,
+  getDutyByIdHandler,
+  updateDutyHandler,
+} from "../controllers/dutyController.js";
 import z from "zod";
 
-const soldierRouter = async (app: FastifyInstance) => {
+const dutyRouter = async (app: FastifyInstance) => {
   const server = app.withTypeProvider<ZodTypeProvider>();
   server.post(
     "",
     {
       schema: {
-        body: SoldierBaseSchema,
+        body: DutyDbInputSchema,
         response: {
-          [StatusCodes.CREATED]: OutputSoldierSchema,
+          [StatusCodes.CREATED]: DutyDbInputSchema,
           [StatusCodes.BAD_REQUEST]: BadRequestSchema,
           [StatusCodes.CONFLICT]: ErrorSchema,
           [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
         },
       },
     },
-    createSoldierHandler
+    createDutyHandler
+  );
+  server.get(
+    "",
+    {
+      schema: {
+        querystring: DutyQuerySchema,
+        response: {
+          [StatusCodes.OK]: z.array(DutyDbInputSchema),
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    getDutiesQueryHandler
   );
   server.get(
     "/:id",
     {
       schema: {
-        params: IdSchema,
+        params: DutyIdSchema,
         response: {
-          [StatusCodes.OK]: OutputSoldierSchema,
+          [StatusCodes.OK]: DutyDbInputSchema,
           [StatusCodes.BAD_REQUEST]: BadRequestSchema,
           [StatusCodes.NOT_FOUND]: ErrorSchema,
           [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
         },
       },
     },
-    getSoldierHandler
-  );
-  server.get(
-    "",
-    {
-      schema: {
-        querystring: SoldierQuerySchema,
-        response: {
-          [StatusCodes.OK]: z.array(GetSoldierSchema),
-          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
-          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
-        },
-      },
-    },
-    getSoldiersQueryHandler
+    getDutyByIdHandler
   );
   server.delete(
     "/:id",
     {
       schema: {
-        params: IdSchema,
+        params: DutyIdSchema,
         response: {
           [StatusCodes.NO_CONTENT]: NoContentSchema,
           [StatusCodes.BAD_REQUEST]: BadRequestSchema,
@@ -83,39 +81,41 @@ const soldierRouter = async (app: FastifyInstance) => {
         },
       },
     },
-    deleteSoldierHandler
+    deleteDutyHandler
   );
   server.patch(
     "/:id",
     {
       schema: {
-        body: SoldierUpdateSchema,
+        body: DutyUpdateSchema,
         response: {
-          [StatusCodes.OK]: OutputSoldierSchema,
+          [StatusCodes.OK]: DutyDbInputSchema,
           [StatusCodes.BAD_REQUEST]: BadRequestSchema,
           [StatusCodes.NOT_FOUND]: ErrorSchema,
           [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
         },
       },
     },
-    updateSoldierHandler
+    updateDutyHandler
   );
   server.put(
-    "/:id/limitations",
+    "/:id/constraints",
     {
       schema: {
-        params: IdSchema,
-        body: SoldierUpdateSchema,
+        params: DutyIdSchema,
+        body: DutyUpdateSchema,
         response: {
-          [StatusCodes.OK]: OutputSoldierSchema,
+          [StatusCodes.OK]: DutyDbInputSchema,
           [StatusCodes.BAD_REQUEST]: BadRequestSchema,
           [StatusCodes.NOT_FOUND]: ErrorSchema,
           [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
         },
       },
     },
-    appendLimitationsHandler
+    appendConstraintsHandler
   );
+
+  return server;
 };
 
-export { soldierRouter };
+export { dutyRouter };

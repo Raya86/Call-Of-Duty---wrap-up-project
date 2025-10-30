@@ -7,6 +7,7 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
+import { dutyRouter } from "./routes/dutyRouter.js";
 
 const buildApp = async () => {
   const app = fastify({
@@ -29,6 +30,7 @@ const buildApp = async () => {
 
   app.register(healthRouter, { prefix: "health" });
   app.register(soldierRouter, { prefix: "soldiers" });
+  app.register(dutyRouter, { prefix: "duties" });
 
   return app;
 };

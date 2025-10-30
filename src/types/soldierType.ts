@@ -40,17 +40,6 @@ const OutputSoldierSchema = SoldierBaseSchema.extend({
   rank: RankDbOutputSchema,
 });
 
-const ErrorSchema = z.object({ error: z.string() });
-
-const BadRequestSchema = z.object({
-  statusCode: z.number(),
-  code: z.string(),
-  error: z.string(),
-  message: z.string(),
-});
-
-const NoContentSchema = z.null();
-
 const limitationsToArray = z
   .union([z.array(z.string()), z.string()])
   .transform((v) => (Array.isArray(v) ? v : v.split(",")))
@@ -109,9 +98,6 @@ export {
   RANKS,
   SoldierBaseSchema,
   OutputSoldierSchema,
-  ErrorSchema,
-  BadRequestSchema,
-  NoContentSchema,
   IdSchema,
   SoldierQuerySchema,
   GetSoldierSchema,
