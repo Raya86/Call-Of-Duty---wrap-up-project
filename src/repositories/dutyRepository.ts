@@ -28,4 +28,22 @@ const updateDuty = async (id: string, duty: DutyUpdate) =>
       { $set: duty, $currentDate: { updatedAt: true } }
     );
 
-export { createDuty, getDutiesQuery, getDutyById, deleteDutyById, updateDuty };
+const updateConstraints = async (id: string, dutyConstraints: DutyUpdate) =>
+  await getDb()
+    .collection<Duty>(COLLECTION_NAME)
+    .updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $addToSet: { constraints: { $each: dutyConstraints.constraints } },
+        $currentDate: { updatedAt: true },
+      }
+    );
+
+export {
+  createDuty,
+  getDutiesQuery,
+  getDutyById,
+  deleteDutyById,
+  updateDuty,
+  updateConstraints,
+};

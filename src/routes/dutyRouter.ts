@@ -13,6 +13,7 @@ import {
 import { StatusCodes } from "http-status-codes";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import {
+  appendConstraintsHandler,
   createDutyHandler,
   deleteDutyHandler,
   getDutiesQueryHandler,
@@ -96,6 +97,22 @@ const dutyRouter = async (app: FastifyInstance) => {
       },
     },
     updateDutyHandler
+  );
+  server.put(
+    "/:id/constraints",
+    {
+      schema: {
+        params: DutyIdSchema,
+        body: DutyUpdateSchema,
+        response: {
+          [StatusCodes.OK]: DutyDbInputSchema,
+          [StatusCodes.BAD_REQUEST]: BadRequestSchema,
+          [StatusCodes.NOT_FOUND]: ErrorSchema,
+          [StatusCodes.INTERNAL_SERVER_ERROR]: ErrorSchema,
+        },
+      },
+    },
+    appendConstraintsHandler
   );
 
   return server;

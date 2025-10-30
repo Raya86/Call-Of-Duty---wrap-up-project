@@ -1,4 +1,4 @@
-import { afterAll, expect, test, beforeAll } from "vitest";
+import { afterAll, expect, test, beforeAll, describe } from "vitest";
 import { StatusCodes } from "http-status-codes";
 import { FastifyInstance } from "fastify";
 import { buildApp } from "../src/app.js";
@@ -713,6 +713,143 @@ test("update duty - update schedule history", async () => {
   expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 
   await deleteDutyById(duty._id.toString());
+});
+
+////////////////////////////////
+// test appending constraints //
+////////////////////////////////
+
+const MOCK_UPDATED_CONSTRAINTS_1 = {
+  name: "Night Watch - North Gate",
+  description:
+    "Oversee and secure the northern gate area during nighttime operations.",
+  location: {
+    type: "Point",
+    coordinates: [34.7818, 32.0853],
+  },
+  startTime: "2026-10-09T22:00:00.000Z",
+  endTime: "2026-10-10T06:00:00.000Z",
+  constraints: [
+    "Requires at least one officer with clearance level 2",
+    "Soldiers must have completed night training",
+    "test1",
+    "test2!",
+  ],
+  soldiersRequired: 3,
+  value: 2,
+  minRank: 2,
+  maxRank: 4,
+  soldiers: [],
+  status: "unscheduled",
+};
+
+const MOCK_UPDATED_CONSTRAINTS_2 = {
+  name: "Night Watch - North Gate",
+  description:
+    "Oversee and secure the northern gate area during nighttime operations.",
+  location: {
+    type: "Point",
+    coordinates: [34.7818, 32.0853],
+  },
+  startTime: "2026-10-09T22:00:00.000Z",
+  endTime: "2026-10-10T06:00:00.000Z",
+  constraints: [
+    "Requires at least one officer with clearance level 2",
+    "Soldiers must have completed night training",
+    "test1",
+    "test2!",
+    "food",
+  ],
+  soldiersRequired: 3,
+  value: 2,
+  minRank: 2,
+  maxRank: 4,
+  soldiers: [],
+  status: "unscheduled",
+};
+
+describe("test pushing constraints", () => {
+  let dutyForConstrains: any;
+  beforeAll(async () => {
+    dutyForConstrains = (
+      await getDutiesQuery({ name: "Night Watch - North Gate" } as any)
+    )[0];
+  });
+
+  test("append constraints", async () => {
+    const res = await testApp.inject({
+      method: "PUT",
+      url: `/duties/${dutyForConstrains._id.toString()}/constraints`,
+      body: {
+        name: "test update",
+        constraints: ["test1", "test2!"],
+      },
+    });
+
+    const { createdAt, updatedAt, statusHistory, ...soldierWithoutDate } = {
+      ...res.json(),
+    };
+    const updatedAtDate = new Date(updatedAt);
+
+    expect(res.statusCode).toBe(StatusCodes.OK);
+    expect(soldierWithoutDate).toEqual(MOCK_UPDATED_CONSTRAINTS_1);
+    expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+  });
+
+  test("append constraints with extra parameters ", async () => {
+    const res = await testApp.inject({
+      method: "PUT",
+      url: `/duties/${dutyForConstrains._id.toString()}/constraints`,
+      body: {
+        name: "test update 2",
+        constraints: ["food"],
+        somethingElse: "not suppose to be here",
+      },
+    });
+
+    const { createdAt, updatedAt, statusHistory, ...soldierWithoutDate } = {
+      ...res.json(),
+    };
+    const updatedAtDate = new Date(updatedAt);
+
+    expect(res.statusCode).toBe(StatusCodes.OK);
+    expect(soldierWithoutDate).toEqual(MOCK_UPDATED_CONSTRAINTS_2);
+    expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+  });
+
+  test("append constraints enter number - error", async () => {
+    const res = await testApp.inject({
+      method: "PUT",
+      url: `/duties/${dutyForConstrains._id.toString()}/constraints`,
+      body: {
+        constraints: [121],
+      },
+    });
+
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+  });
+
+  test("append constraints id format - 400", async () => {
+    const res = await testApp.inject({
+      method: "PUT",
+      url: `/duties/516546514651/constraints`,
+    });
+
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+    expect(res.json()).toEqual({
+      statusCode: 400,
+      code: "FST_ERR_VALIDATION",
+      error: "Bad Request",
+      message: "params/id Invalid input",
+    });
+  });
+
+  afterAll(async () => {
+    await testApp.inject({
+      method: "DELETE",
+      url: `/duties/${dutyForConstrains._id.toString()}`,
+    });
+  });
 });
 
 afterAll(async () => {

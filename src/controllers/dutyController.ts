@@ -6,6 +6,7 @@ import {
   deleteDutyById,
   getDutiesQuery,
   getDutyById,
+  updateConstraints,
   updateDuty,
 } from "../repositories/dutyRepository.js";
 import { CustomError } from "../errors/conflictError.js";
@@ -130,10 +131,27 @@ const updateDutyHandler = async (
   }
 };
 
+const appendConstraintsHandler = async (
+  req: FastifyRequest<{ Params: DutyId }>,
+  res: FastifyReply
+) => {
+  try {
+    const duty = req.body as Duty;
+    await updateConstraints(String(req.params.id), duty);
+
+    return res
+      .status(StatusCodes.OK)
+      .send(await getDutyById(String(req.params.id)));
+  } catch (err: any) {
+    throw err;
+  }
+};
+
 export {
   createDutyHandler,
   getDutiesQueryHandler,
   getDutyByIdHandler,
   deleteDutyHandler,
   updateDutyHandler,
+  appendConstraintsHandler,
 };
