@@ -2,18 +2,18 @@ import type { FastifyInstance } from "fastify";
 import { StatusCodes } from "http-status-codes";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { buildApp } from "../src/app.js";
-import {
-  deleteAllSoldiers,
-  insertAllSoldiers,
-} from "../src/repositories/soldierRepository.js";
 import { connectDB } from "../src/db.js";
+import {
+	deleteAllSoldiers,
+	insertAllSoldiers,
+} from "../src/repositories/soldierRepository.js";
 
 let testApp: FastifyInstance;
 
 beforeAll(async () => {
-  testApp = await buildApp();
-  await connectDB();
-  await insertAllSoldiers();
+	testApp = await buildApp();
+	await connectDB();
+	await insertAllSoldiers();
 });
 
 /////////////////////////
@@ -21,127 +21,127 @@ beforeAll(async () => {
 /////////////////////////
 
 const MOCK_SOLDIER_WITHOUT_RANK_NAME = {
-  _id: "1111111",
-  name: "test a",
-  rank: {
-    value: 5,
-    name: "major",
-  },
-  limitations: ["night missions", "high altitude"],
+	_id: "1111111",
+	name: "test a",
+	rank: {
+		value: 5,
+		name: "major",
+	},
+	limitations: ["night missions", "high altitude"],
 };
 
 const MOCK_SOLDIER_EXTRA_PARAMS = {
-  _id: "2222222",
-  name: "test b",
-  rank: {
-    value: 5,
-    name: "major",
-  },
-  limitations: ["night missions", "high altitude"],
+	_id: "2222222",
+	name: "test b",
+	rank: {
+		value: 5,
+		name: "major",
+	},
+	limitations: ["night missions", "high altitude"],
 };
 
 test("create soldier without rank name ", async () => {
-  const res = await testApp.inject({
-    method: "POST",
-    url: "/soldiers",
-    body: {
-      _id: "1111111",
-      name: "test a",
-      rank: {
-        value: 5,
-      },
-      limitations: ["night miSsions", "high altitude"],
-    },
-  });
+	const res = await testApp.inject({
+		method: "POST",
+		url: "/soldiers",
+		body: {
+			_id: "1111111",
+			name: "test a",
+			rank: {
+				value: 5,
+			},
+			limitations: ["night miSsions", "high altitude"],
+		},
+	});
 
-  const { createdAt, updatedAt, ...soldierWithoutDate } = {
-    ...res.json(),
-  };
-  const createdAtDate = new Date(createdAt);
-  const updatedAtDate = new Date(updatedAt);
+	const { createdAt, updatedAt, ...soldierWithoutDate } = {
+		...res.json(),
+	};
+	const createdAtDate = new Date(createdAt);
+	const updatedAtDate = new Date(updatedAt);
 
-  expect(res.statusCode).toBe(StatusCodes.CREATED);
-  expect(soldierWithoutDate).toEqual(MOCK_SOLDIER_WITHOUT_RANK_NAME);
-  expect(createdAtDate.getTime()).toBeCloseTo(Date.now(), -2);
-  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(res.statusCode).toBe(StatusCodes.CREATED);
+	expect(soldierWithoutDate).toEqual(MOCK_SOLDIER_WITHOUT_RANK_NAME);
+	expect(createdAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
 test("create soldier with extra parameters ", async () => {
-  const res = await testApp.inject({
-    method: "POST",
-    url: "/soldiers",
-    body: {
-      _id: "2222222",
-      name: "test b",
-      rank: {
-        name: "major",
-      },
-      limitations: ["night missions", "high altitude"],
-      somethingElse: "not suppose to be here",
-    },
-  });
+	const res = await testApp.inject({
+		method: "POST",
+		url: "/soldiers",
+		body: {
+			_id: "2222222",
+			name: "test b",
+			rank: {
+				name: "major",
+			},
+			limitations: ["night missions", "high altitude"],
+			somethingElse: "not suppose to be here",
+		},
+	});
 
-  const { createdAt, updatedAt, ...soldierWithoutDate } = {
-    ...res.json(),
-  };
-  const createdAtDate = new Date(createdAt);
-  const updatedAtDate = new Date(updatedAt);
+	const { createdAt, updatedAt, ...soldierWithoutDate } = {
+		...res.json(),
+	};
+	const createdAtDate = new Date(createdAt);
+	const updatedAtDate = new Date(updatedAt);
 
-  expect(res.statusCode).toBe(StatusCodes.CREATED);
-  expect(soldierWithoutDate).toEqual(MOCK_SOLDIER_EXTRA_PARAMS);
-  expect(createdAtDate.getTime()).toBeCloseTo(Date.now(), -2);
-  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(res.statusCode).toBe(StatusCodes.CREATED);
+	expect(soldierWithoutDate).toEqual(MOCK_SOLDIER_EXTRA_PARAMS);
+	expect(createdAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
 test("create soldier with rank name and value - 400", async () => {
-  const res = await testApp.inject({
-    method: "POST",
-    url: "/soldiers",
-    body: {
-      _id: "2222222",
-      name: "test b",
-      rank: {
-        name: "major",
-        value: 5,
-      },
-      limitations: ["night missions", "high altitude"],
-    },
-  });
+	const res = await testApp.inject({
+		method: "POST",
+		url: "/soldiers",
+		body: {
+			_id: "2222222",
+			name: "test b",
+			rank: {
+				name: "major",
+				value: 5,
+			},
+			limitations: ["night missions", "high altitude"],
+		},
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
 });
 
 test("fail create soldier schema error - missing parameter- 400", async () => {
-  const res = await testApp.inject({
-    method: "POST",
-    url: "/soldiers",
-    body: {
-      _id: "2222222",
-      rank: {
-        name: "major",
-      },
-      limitations: ["night missions", "high altitude"],
-    },
-  });
+	const res = await testApp.inject({
+		method: "POST",
+		url: "/soldiers",
+		body: {
+			_id: "2222222",
+			rank: {
+				name: "major",
+			},
+			limitations: ["night missions", "high altitude"],
+		},
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
 });
 
 test("fail create soldier duplicate in db - 409", async () => {
-  const res = await testApp.inject({
-    method: "POST",
-    url: "/soldiers",
-    body: {
-      _id: "1234567",
-      name: "John Doe",
-      rank: {
-        name: "Captain",
-      },
-      limitations: ["night missions", "high altitude"],
-    },
-  });
-  expect(res.statusCode).toBe(StatusCodes.CONFLICT);
-  expect(res.json()).toEqual({ error: "Conflict" });
+	const res = await testApp.inject({
+		method: "POST",
+		url: "/soldiers",
+		body: {
+			_id: "1234567",
+			name: "John Doe",
+			rank: {
+				name: "Captain",
+			},
+			limitations: ["night missions", "high altitude"],
+		},
+	});
+	expect(res.statusCode).toBe(StatusCodes.CONFLICT);
+	expect(res.json()).toEqual({ error: "Conflict" });
 });
 
 //////////////////////////
@@ -149,96 +149,96 @@ test("fail create soldier duplicate in db - 409", async () => {
 //////////////////////////
 
 const SOLDIERS = [
-  {
-    _id: "1122334",
-    name: "Johny a",
-    rank: {
-      value: 5,
-      name: "major",
-    },
-    limitations: ["night missions", "high altitude"],
-    createdAt: "2025-09-01T14:12:14.490Z",
-    updatedAt: "2025-09-01T14:12:14.490Z",
-  },
-  {
-    _id: "1234567",
-    name: "John Doe",
-    rank: {
-      value: 4,
-      name: "Captain",
-    },
-    limitations: ["night missions", "high altitude"],
-    createdAt: "2025-09-02T13:17:52.376Z",
-    updatedAt: "2025-09-02T13:17:52.376Z",
-  },
-  {
-    _id: "1111111",
-    name: "test a",
-    rank: {
-      value: 5,
-      name: "major",
-    },
-    limitations: ["night missions", "high altitude"],
-    createdAt: "2025-09-08T07:36:31.486Z",
-    updatedAt: "2025-09-08T07:36:31.486Z",
-  },
-  {
-    _id: "2222222",
-    name: "test b",
-    rank: {
-      value: 5,
-      name: "major",
-    },
-    limitations: ["night missions", "high altitude"],
-    createdAt: "2025-09-08T07:36:31.511Z",
-    updatedAt: "2025-09-08T07:36:31.511Z",
-  },
-  {
-    _id: "1234568",
-    name: "check array",
-    rank: {
-      value: 3,
-      name: "lieutenant",
-    },
-    limitations: ["food", "standing"],
-    createdAt: "2025-09-10T12:29:40.048Z",
-    updatedAt: "2025-09-10T12:29:40.048Z",
-  },
+	{
+		_id: "1122334",
+		name: "Johny a",
+		rank: {
+			value: 5,
+			name: "major",
+		},
+		limitations: ["night missions", "high altitude"],
+		createdAt: "2025-09-01T14:12:14.490Z",
+		updatedAt: "2025-09-01T14:12:14.490Z",
+	},
+	{
+		_id: "1234567",
+		name: "John Doe",
+		rank: {
+			value: 4,
+			name: "Captain",
+		},
+		limitations: ["night missions", "high altitude"],
+		createdAt: "2025-09-02T13:17:52.376Z",
+		updatedAt: "2025-09-02T13:17:52.376Z",
+	},
+	{
+		_id: "1111111",
+		name: "test a",
+		rank: {
+			value: 5,
+			name: "major",
+		},
+		limitations: ["night missions", "high altitude"],
+		createdAt: "2025-09-08T07:36:31.486Z",
+		updatedAt: "2025-09-08T07:36:31.486Z",
+	},
+	{
+		_id: "2222222",
+		name: "test b",
+		rank: {
+			value: 5,
+			name: "major",
+		},
+		limitations: ["night missions", "high altitude"],
+		createdAt: "2025-09-08T07:36:31.511Z",
+		updatedAt: "2025-09-08T07:36:31.511Z",
+	},
+	{
+		_id: "1234568",
+		name: "check array",
+		rank: {
+			value: 3,
+			name: "lieutenant",
+		},
+		limitations: ["food", "standing"],
+		createdAt: "2025-09-10T12:29:40.048Z",
+		updatedAt: "2025-09-10T12:29:40.048Z",
+	},
 ];
 
 test("get soldier - Ok", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers/1122334",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers/1122334",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual(SOLDIERS[0]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual(SOLDIERS[0]);
 });
 
 test("get soldier - 404", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers/9999999",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers/9999999",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-  expect(res.json()).toEqual({ error: "Not Found" });
+	expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+	expect(res.json()).toEqual({ error: "Not Found" });
 });
 
 test("get soldier - 400", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers/12a",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers/12a",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  expect(res.json()).toEqual({
-    statusCode: 400,
-    code: "FST_ERR_VALIDATION",
-    error: "Bad Request",
-    message: "params/id Invalid string: must match pattern /^\\d{7}$/",
-  });
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.json()).toEqual({
+		statusCode: 400,
+		code: "FST_ERR_VALIDATION",
+		error: "Bad Request",
+		message: "params/id Invalid string: must match pattern /^\\d{7}$/",
+	});
 });
 
 ///////////////////////////////////
@@ -246,78 +246,78 @@ test("get soldier - 400", async () => {
 ///////////////////////////////////
 
 test("get soldier by query - name", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?name=Johny a",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?name=Johny a",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual([SOLDIERS[0]]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual([SOLDIERS[0]]);
 });
 
 test("get soldier by query - limitations", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?limitations=food,standing",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?limitations=food,standing",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual([SOLDIERS[4]]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual([SOLDIERS[4]]);
 });
 
 test("get soldier by query - rank name", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?rankName=lieutenant",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?rankName=lieutenant",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual([SOLDIERS[4]]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual([SOLDIERS[4]]);
 });
 
 test("get soldier by query - rank value", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?rankValue=3",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?rankValue=3",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual([SOLDIERS[4]]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual([SOLDIERS[4]]);
 });
 
 test("get soldier by query - limitations wrong order", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?limitations=standing,food",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?limitations=standing,food",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual([SOLDIERS[4]]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual([SOLDIERS[4]]);
 });
 
 test("get soldier by query - no result", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?rankValue=0",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?rankValue=0",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(res.json()).toEqual([]);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(res.json()).toEqual([]);
 });
 
 test("get soldier - 400", async () => {
-  const res = await testApp.inject({
-    method: "GET",
-    url: "/soldiers?rank=lieutenant",
-  });
+	const res = await testApp.inject({
+		method: "GET",
+		url: "/soldiers?rank=lieutenant",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  expect(res.json()).toEqual({
-    statusCode: 400,
-    code: "FST_ERR_VALIDATION",
-    error: "Bad Request",
-    message: "querystring/rank Invalid input: expected object, received string",
-  });
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.json()).toEqual({
+		statusCode: 400,
+		code: "FST_ERR_VALIDATION",
+		error: "Bad Request",
+		message: "querystring/rank Invalid input: expected object, received string",
+	});
 });
 
 ///////////////////////////
@@ -325,37 +325,37 @@ test("get soldier - 400", async () => {
 ///////////////////////////
 
 test("delete soldier - Ok", async () => {
-  const res = await testApp.inject({
-    method: "DELETE",
-    url: "/soldiers/1111111",
-  });
+	const res = await testApp.inject({
+		method: "DELETE",
+		url: "/soldiers/1111111",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
+	expect(res.statusCode).toBe(StatusCodes.NO_CONTENT);
 });
 
 test("delete soldier - 404", async () => {
-  const res = await testApp.inject({
-    method: "DELETE",
-    url: "/soldiers/1111111",
-  });
+	const res = await testApp.inject({
+		method: "DELETE",
+		url: "/soldiers/1111111",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
-  expect(res.json()).toEqual({ error: "Not Found" });
+	expect(res.statusCode).toBe(StatusCodes.NOT_FOUND);
+	expect(res.json()).toEqual({ error: "Not Found" });
 });
 
 test("delete soldier - 400", async () => {
-  const res = await testApp.inject({
-    method: "DELETE",
-    url: "/soldiers/111a11",
-  });
+	const res = await testApp.inject({
+		method: "DELETE",
+		url: "/soldiers/111a11",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  expect(res.json()).toEqual({
-    statusCode: 400,
-    code: "FST_ERR_VALIDATION",
-    error: "Bad Request",
-    message: "params/id Invalid string: must match pattern /^\\d{7}$/",
-  });
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.json()).toEqual({
+		statusCode: 400,
+		code: "FST_ERR_VALIDATION",
+		error: "Bad Request",
+		message: "params/id Invalid string: must match pattern /^\\d{7}$/",
+	});
 });
 
 ///////////////////////////
@@ -363,98 +363,98 @@ test("delete soldier - 400", async () => {
 ///////////////////////////
 
 const MOCK_UPDATED_SOLDIER_1 = {
-  _id: "2222222",
-  name: "test update",
-  rank: {
-    value: 6,
-    name: "colonel",
-  },
-  limitations: ["night missions", "heat"],
+	_id: "2222222",
+	name: "test update",
+	rank: {
+		value: 6,
+		name: "colonel",
+	},
+	limitations: ["night missions", "heat"],
 };
 
 const MOCK_UPDATED_SOLDIER_2 = {
-  _id: "2222222",
-  name: "test update 2",
-  rank: {
-    value: 6,
-    name: "colonel",
-  },
-  limitations: ["night missions", "heat"],
+	_id: "2222222",
+	name: "test update 2",
+	rank: {
+		value: 6,
+		name: "colonel",
+	},
+	limitations: ["night missions", "heat"],
 };
 
 test("update soldier", async () => {
-  const res = await testApp.inject({
-    method: "PATCH",
-    url: "/soldiers/2222222",
-    body: {
-      name: "test update",
-      rank: {
-        value: 6,
-      },
-      limitations: ["night miSsions", "heat"],
-    },
-  });
+	const res = await testApp.inject({
+		method: "PATCH",
+		url: "/soldiers/2222222",
+		body: {
+			name: "test update",
+			rank: {
+				value: 6,
+			},
+			limitations: ["night miSsions", "heat"],
+		},
+	});
 
-  const { createdAt, updatedAt, ...soldierWithoutDate } = {
-    ...res.json(),
-  };
-  const updatedAtDate = new Date(updatedAt);
+	const { createdAt, updatedAt, ...soldierWithoutDate } = {
+		...res.json(),
+	};
+	const updatedAtDate = new Date(updatedAt);
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_SOLDIER_1);
-  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(soldierWithoutDate).toEqual(MOCK_UPDATED_SOLDIER_1);
+	expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
 test("update soldier with extra parameters ", async () => {
-  const res = await testApp.inject({
-    method: "PATCH",
-    url: "/soldiers/2222222",
-    body: {
-      _id: "2222222",
-      name: "test update 2",
-      somethingElse: "not suppose to be here",
-    },
-  });
+	const res = await testApp.inject({
+		method: "PATCH",
+		url: "/soldiers/2222222",
+		body: {
+			_id: "2222222",
+			name: "test update 2",
+			somethingElse: "not suppose to be here",
+		},
+	});
 
-  const { createdAt, updatedAt, ...soldierWithoutDate } = {
-    ...res.json(),
-  };
-  const updatedAtDate = new Date(updatedAt);
+	const { createdAt, updatedAt, ...soldierWithoutDate } = {
+		...res.json(),
+	};
+	const updatedAtDate = new Date(updatedAt);
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_SOLDIER_2);
-  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(soldierWithoutDate).toEqual(MOCK_UPDATED_SOLDIER_2);
+	expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
 test("update soldier with rank name and value - 400", async () => {
-  const res = await testApp.inject({
-    method: "PATCH",
-    url: "/soldiers/2222222",
-    body: {
-      name: "test update",
-      rank: {
-        name: "major",
-        value: 5,
-      },
-    },
-  });
+	const res = await testApp.inject({
+		method: "PATCH",
+		url: "/soldiers/2222222",
+		body: {
+			name: "test update",
+			rank: {
+				name: "major",
+				value: 5,
+			},
+		},
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
 });
 
 test("update soldier with _id - error", async () => {
-  const res = await testApp.inject({
-    method: "PATCH",
-    url: "/soldiers/2222222",
-    body: {
-      _id: "2222280",
-      rank: {
-        name: "colonel",
-      },
-    },
-  });
+	const res = await testApp.inject({
+		method: "PATCH",
+		url: "/soldiers/2222222",
+		body: {
+			_id: "2222280",
+			rank: {
+				name: "colonel",
+			},
+		},
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
+	expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR);
 });
 
 ////////////////////////////////
@@ -462,100 +462,100 @@ test("update soldier with _id - error", async () => {
 ////////////////////////////////
 
 const MOCK_UPDATED_LIMITATIONS_1 = {
-  _id: "2222222",
-  name: "test update 2",
-  rank: {
-    value: 6,
-    name: "colonel",
-  },
-  limitations: ["night missions", "heat", "cold", "hights"],
+	_id: "2222222",
+	name: "test update 2",
+	rank: {
+		value: 6,
+		name: "colonel",
+	},
+	limitations: ["night missions", "heat", "cold", "hights"],
 };
 
 const MOCK_UPDATED_LIMITATIONS_2 = {
-  _id: "2222222",
-  name: "test update 2",
-  rank: {
-    value: 6,
-    name: "colonel",
-  },
-  limitations: ["night missions", "heat", "cold", "hights", "food"],
+	_id: "2222222",
+	name: "test update 2",
+	rank: {
+		value: 6,
+		name: "colonel",
+	},
+	limitations: ["night missions", "heat", "cold", "hights", "food"],
 };
 
 test("append limitations", async () => {
-  const res = await testApp.inject({
-    method: "PUT",
-    url: "/soldiers/2222222/limitations",
-    body: {
-      name: "test update",
-      rank: {
-        value: 6,
-      },
-      limitations: ["COld", "hights"],
-    },
-  });
+	const res = await testApp.inject({
+		method: "PUT",
+		url: "/soldiers/2222222/limitations",
+		body: {
+			name: "test update",
+			rank: {
+				value: 6,
+			},
+			limitations: ["COld", "hights"],
+		},
+	});
 
-  const { createdAt, updatedAt, ...soldierWithoutDate } = {
-    ...res.json(),
-  };
-  const updatedAtDate = new Date(updatedAt);
+	const { createdAt, updatedAt, ...soldierWithoutDate } = {
+		...res.json(),
+	};
+	const updatedAtDate = new Date(updatedAt);
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_LIMITATIONS_1);
-  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(soldierWithoutDate).toEqual(MOCK_UPDATED_LIMITATIONS_1);
+	expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
 test("append limitations with extra parameters ", async () => {
-  const res = await testApp.inject({
-    method: "PUT",
-    url: "/soldiers/2222222/limitations",
-    body: {
-      name: "test update 2",
-      limitations: ["food"],
-      somethingElse: "not suppose to be here",
-    },
-  });
+	const res = await testApp.inject({
+		method: "PUT",
+		url: "/soldiers/2222222/limitations",
+		body: {
+			name: "test update 2",
+			limitations: ["food"],
+			somethingElse: "not suppose to be here",
+		},
+	});
 
-  const { createdAt, updatedAt, ...soldierWithoutDate } = {
-    ...res.json(),
-  };
-  const updatedAtDate = new Date(updatedAt);
+	const { createdAt, updatedAt, ...soldierWithoutDate } = {
+		...res.json(),
+	};
+	const updatedAtDate = new Date(updatedAt);
 
-  expect(res.statusCode).toBe(StatusCodes.OK);
-  expect(soldierWithoutDate).toEqual(MOCK_UPDATED_LIMITATIONS_2);
-  expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
+	expect(res.statusCode).toBe(StatusCodes.OK);
+	expect(soldierWithoutDate).toEqual(MOCK_UPDATED_LIMITATIONS_2);
+	expect(updatedAtDate.getTime()).toBeCloseTo(Date.now(), -2);
 });
 
 test("append limitations enter number - error", async () => {
-  const res = await testApp.inject({
-    method: "PUT",
-    url: "/soldiers/2222222/limitations",
-    body: {
-      rank: {
-        name: "colonel",
-      },
-      limitations: [121],
-    },
-  });
+	const res = await testApp.inject({
+		method: "PUT",
+		url: "/soldiers/2222222/limitations",
+		body: {
+			rank: {
+				name: "colonel",
+			},
+			limitations: [121],
+		},
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
 });
 
 test("append limitations id format - 400", async () => {
-  const res = await testApp.inject({
-    method: "PUT",
-    url: "/soldiers/12a/limitations",
-  });
+	const res = await testApp.inject({
+		method: "PUT",
+		url: "/soldiers/12a/limitations",
+	});
 
-  expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
-  expect(res.json()).toEqual({
-    statusCode: 400,
-    code: "FST_ERR_VALIDATION",
-    error: "Bad Request",
-    message: "params/id Invalid string: must match pattern /^\\d{7}$/",
-  });
+	expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST);
+	expect(res.json()).toEqual({
+		statusCode: 400,
+		code: "FST_ERR_VALIDATION",
+		error: "Bad Request",
+		message: "params/id Invalid string: must match pattern /^\\d{7}$/",
+	});
 });
 
 afterAll(async () => {
-  await deleteAllSoldiers();
-  await testApp.close();
+	await deleteAllSoldiers();
+	await testApp.close();
 });
