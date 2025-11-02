@@ -7,7 +7,14 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+RUN npm run build
+
+COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+
+
+RUN ls
+
+CMD ["node", "dist/index.jss"]
