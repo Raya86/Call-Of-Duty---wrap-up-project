@@ -1,12 +1,19 @@
-import { afterAll, expect, test, beforeAll } from "vitest";
+import type { FastifyInstance } from "fastify";
 import { StatusCodes } from "http-status-codes";
-import { FastifyInstance } from "fastify";
+import { afterAll, beforeAll, expect, test } from "vitest";
 import { buildApp } from "../src/app.js";
+import {
+  deleteAllSoldiers,
+  insertAllSoldiers,
+} from "../src/repositories/soldierRepository.js";
+import { connectDB } from "../src/db.js";
 
 let testApp: FastifyInstance;
 
 beforeAll(async () => {
   testApp = await buildApp();
+  await connectDB();
+  await insertAllSoldiers();
 });
 
 /////////////////////////
@@ -549,5 +556,6 @@ test("append limitations id format - 400", async () => {
 });
 
 afterAll(async () => {
+  await deleteAllSoldiers();
   await testApp.close();
 });
