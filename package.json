@@ -12,7 +12,8 @@
 		"dev": "npm run infra:up && tsx --env-file=.env --watch src/index.ts | pino-pretty ",
 		"infra:up": "docker compose up -d",
 		"infra:down": "docker compose down",
-		"test": "vitest --run ."
+		"test": "vitest --run .",
+		"lint": "biome check ."
 	},
 	"repository": {
 		"type": "git",
