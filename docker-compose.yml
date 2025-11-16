@@ -1,4 +1,14 @@
+version: '3.9'
 services:
+  app:
+    build: .
+    ports:
+     - "3000:3000"
+    environment:
+     - NODE_ENV=development
+    depends_on:
+      - mongo
+
   mongo:
     image: mongo:latest
     container_name: my-mongo
