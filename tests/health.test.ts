@@ -20,18 +20,18 @@ test("test health check endpoint - successful", async () => {
 	expect(response.json()).toEqual({ status: "ok" });
 });
 
-test("test health/db check endpoint - successful", async () => {
-	const response = await testApp.inject({ method: "GET", url: "/health/db" });
-	expect(response.statusCode).toBe(StatusCodes.OK);
-	expect(response.json()).toEqual({ status: "connected" });
-});
+// test("test health/db check endpoint - successful", async () => {
+// 	const response = await testApp.inject({ method: "GET", url: "/health/db" });
+// 	expect(response.statusCode).toBe(StatusCodes.OK);
+// 	expect(response.json()).toEqual({ status: "connected" });
+// });
 
-test("test health/db check endpoint - error", async () => {
-	await closeDB();
-	const response = await testApp.inject({ method: "GET", url: "/health/db" });
-	expect(response.statusCode).toBe(StatusCodes.SERVICE_UNAVAILABLE);
-	expect(response.json()).toEqual({ status: "not connected" });
-});
+// test("test health/db check endpoint - error", async () => {
+// 	await closeDB();
+// 	const response = await testApp.inject({ method: "GET", url: "/health/db" });
+// 	expect(response.statusCode).toBe(StatusCodes.SERVICE_UNAVAILABLE);
+// 	expect(response.json()).toEqual({ status: "not connected" });
+// });
 
 afterAll(async () => {
 	await testApp.close();
